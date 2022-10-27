@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src = "https://mimicproject.com/libs/nexusUI.js"></script>
+    <script src = "https://mimicproject.com/libs/maximilian.v.0.1.js" crossorigin="anonymous"></script>
+    <link href="https://fonts.googleapis.com/css?family=Staatliches" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://mimicproject.com/libs/maximilian-example.css" />
+    <meta http-equiv="origin-trial" content="Am2BZ1TAHTD828eDv1ATcn7SD4+NoVRU1Vxjkl5p7SsUfluwqLPYNpsk8Gjxflgt0Mmw0v683uH4F3KreTUxIQsAAABheyJvcmlnaW4iOiJodHRwOi8vbG9jYWxob3N0OjYzMzQyIiwiZmVhdHVyZSI6IlVucmVzdHJpY3RlZFNoYXJlZEFycmF5QnVmZmVyIiwiZXhwaXJ5IjoxNjc1Mjk1OTk5fQ==">
+    <div id="title">Maximilian.js Seed</div>
+    <div>
+        <br>
+        <div class="subtitle">Part One: C Major</div>
+        <p style="font-size: small">
+            7 oscillators, 2 with phase<br>
+            osc3 & osc5 controls osc1 & osc2<br>
+            osc4 is a 16 time resonance oscillator add detail to the sound<br>
+            two sounds play together to restore a natural sound
+        </p>
+        <div><button id="playButton">Play</button></div>
+    </div>
+    <div>
+        <div>
+            <button id="pitch-c">C</button>
+            <button id="pitch-d">B</button>
+            <button id="pitch-e">E</button>
+            <button id="pitch-f">F</button>
+            <button id="pitch-g">G</button>
+            <button id="pitch-a">A</button>
+            <button id="pitch-b">B</button>
+        </div>
+    </div>
+    <div id="oscilloscope"></div>
+    <div id="spectrogram"></div>
+</head>
+<body>
+
+<!-- Maximilian code goes here -->
+<script id = "myAudioScript">
+    // var pitch = 261.63
+
+    var input = new Input('fromClick');
+    // console.log("123213")
+    var osc1 = new Maximilian.maxiOsc();
+    var osc2 = new Maximilian.maxiOsc();
+    osc2.phaseReset(0.5)
+    var osc3 = new Maximilian.maxiOsc();
+    osc3.phaseReset(0.2)
+    var osc4 = new Maximilian.maxiOsc();
+    var osc5 = new Maximilian.maxiOsc();
+    var filter = new Maximilian.maxiFilter();
+    function play() {
+        // console.log(wave)
+        // pitch = 261.63
+        var pitch = input.getValue();
+        // osc3.phaseReset(0.618)
+
+        // console.log(pitch)
+        return [osc1.coswave(pitch) + osc3.sinewave(pitch+osc5.sinewave(pitch)*pitch)*0.5 + filter.hires((0-osc2.saw(pitch)) * 0.2, osc5.square(pitch, 1), 10)+ osc4.sinewave(pitch*16) * 0.05, osc1.coswave(osc5.sinewave(pitch)*pitch)*0.5 + osc3.saw(pitch)*0.1 + osc2.square(pitch, 0.5) * 0.1 + osc4.sinewave(pitch*16) * 0.05]
+        // return [osc1.coswave(pitch) + osc3.sinewave(pitch)*0.5 + filter.hires((0-osc2.saw(pitch)) * 0.2, osc5.square(pitch, 1), 10)+ osc4.sinewave(pitch*16) * 0.05, osc1.coswave(pitch) + osc3.saw(pitch)*0.1 + osc2.square(pitch, 0.5) * 0.1 + osc4.sinewave(pitch*16) * 0.05]
+    }
+</script>
+
+<!-- Main Javascript code goes here -->
+<script language="javascript">
+    let maxi;
+    // let pitch;
+    initAudioEngine().then((dspEngine)=>{
+        maxi = dspEngine;
+        setup();
+        //Get audio code from script element
+        maxi.setAudioCode("myAudioScript");
+    })
+
+    let tone = 261.63;
+    document.getElementById('pitch-c').addEventListener("click", () => {
+        tone = 261.63
+        console.log(tone)
+        maxi.send("fromClick", [tone])
+    })
+    document.getElementById('pitch-d').addEventListener("click", () => {
+        tone = 293.66
+        console.log(tone)
+        maxi.send("fromClick", [tone])
+    })
+    document.getElementById('pitch-e').addEventListener("click", () => {
+        tone = 329.63
+        console.log(tone)
+        maxi.send("fromClick", [tone])
+    })
+    document.getElementById('pitch-f').addEventListener("click", () => {
+        tone = 349.29
+        console.log(tone)
+        maxi.send("fromClick", [tone])
+    })
+    document.getElementById('pitch-g').addEventListener("click", () => {
+        tone = 392.00
+        console.log(tone)
+        maxi.send("fromClick", [tone])
+    })
+    document.getElementById('pitch-a').addEventListener("click", () => {
+        tone = 440.00
+        console.log(tone)
+        maxi.send("fromClick", [tone])
+    })
+    document.getElementById('pitch-b').addEventListener("click", () => {
+        tone = 493.88
+        console.log(tone)
+        maxi.send("fromClick", [tone])
+    })
+
+
+    ///////YOU CAN IGNORE ME - CODE FOR SCOPES///////
+    let setup = ()=> {
+        maxi.hush()
+        Nexus.context = maxi.audioWorkletNode.context;
+        new Nexus.Oscilloscope('oscilloscope', {'size': [400,100]}).connect(maxi.audioWorkletNode);
+        new Nexus.Spectrogram('spectrogram', {'size': [400,100]}).connect(maxi.audioWorkletNode);
+        const playButton = document.getElementById('playButton');
+        // maxi.send("fromClick", 261.63)
+        // pitch = 261.63
+        let playAudio = () => {
+            playButton.innerHTML  = maxi.play() ? "STOP":"PLAY"
+        }
+        playButton.addEventListener("click", () => {
+            maxi.send("fromClick", [261.63])
+            playAudio()
+            // maxi.play()
+        });
+    }
+    ///////////////////////////////////////////////
+</script>
+</body>
+</html>

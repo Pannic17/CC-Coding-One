@@ -7,13 +7,34 @@ let animation;
 window.onload = function () {
     canvas = document.getElementById('canvas');
     context = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 
     canvas.style.background = 'black';
     // context.globalCompositeOperation = "destination-over";
     // context.fillStyle = "rgba(0,0,0,1)";
     // context.fillRect(0,0, canvas.width, canvas.height);
 
-    initCanvas();
+    // initCanvas();
+    context.fillStyle = 'green';
+    context.strokeStyle = 'yellow';
+    context.lineWidth = 30;
+    context.lineCap = 'round';
+
+    let size = 200;
+    let sides = 7;
+    context.save();
+    context.translate(canvas.width/2, canvas.height/2);
+    context.scale(1,1);
+    context.rotate(0);
+
+    for (let i=0; i<sides; i++) {
+        context.beginPath();
+        context.moveTo(0,0);
+        context.lineTo(size, 0);
+        context.stroke();
+        context.rotate(Math.PI*2/sides);
+    }
 }
 
 window.addEventListener('resize', function () {
@@ -57,6 +78,11 @@ function drawColorRect() {
         }
     }
 }
+
+
+
+
+
 
 class RandomLinesEffect {
     _context;
@@ -219,8 +245,8 @@ class FlowFieldEffect {
         let distance = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
         const length = distance/8;
         // console.log(x)
-        let directionX = (mouse.x - this._width)/this._width;
-        let directionY = (mouse.y - this._height)/this._height;
+        let directionX = Math.abs((mouse.x - this._width)/this._width);
+        let directionY = Math.abs((mouse.y - this._height)/this._height);
         this._context.beginPath();
         this._context.moveTo(x, y);
         this._context.lineTo(x+Math.cos(r)*directionX*length, y+Math.sin(r)*directionY*length);

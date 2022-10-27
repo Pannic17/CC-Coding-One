@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src = "https://mimicproject.com/libs/nexusUI.js"></script>
+    <script src = "https://mimicproject.com/libs/maximilian.v.0.1.js" crossorigin="anonymous"></script>
+    <link href="https://fonts.googleapis.com/css?family=Staatliches" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://mimicproject.com/libs/maximilian-example.css" />
+    <meta http-equiv="origin-trial" content="Am2BZ1TAHTD828eDv1ATcn7SD4+NoVRU1Vxjkl5p7SsUfluwqLPYNpsk8Gjxflgt0Mmw0v683uH4F3KreTUxIQsAAABheyJvcmlnaW4iOiJodHRwOi8vbG9jYWxob3N0OjYzMzQyIiwiZmVhdHVyZSI6IlVucmVzdHJpY3RlZFNoYXJlZEFycmF5QnVmZmVyIiwiZXhwaXJ5IjoxNjc1Mjk1OTk5fQ==">
+    <div id="title">Maximilian.js Seed</div>
+    <div>
+        <br>
+        <div class="subtitle">Part Two: Varying</div>
+        <div><button id="playButton2">Play</button></div>
+<!--        <div id="countDown">60s</div>-->
+    </div>
+<!--    <div>-->
+<!--        <div>-->
+<!--            <button id="pitch-c">C</button>-->
+<!--            <button id="pitch-d">B</button>-->
+<!--            <button id="pitch-e">E</button>-->
+<!--            <button id="pitch-f">F</button>-->
+<!--            <button id="pitch-g">G</button>-->
+<!--            <button id="pitch-a">A</button>-->
+<!--            <button id="pitch-b">B</button>-->
+<!--        </div>-->
+<!--    </div>-->
+    <div id="oscilloscope"></div>
+    <div id="spectrogram"></div>
+</head>
+<body>
+
+<!-- Maximilian code goes here -->
+<script id ="part2AudioScript">
+    // var pitch = 261.63
+
+    var input = new Input('onChange')
+    // console.log("123213")
+    var osc1 = new Maximilian.maxiOsc();
+    // var osc2 = new Maximilian.maxiOsc();
+    // osc2.phaseReset(0.5)
+    // var osc3 = new Maximilian.maxiOsc();
+    // osc3.phaseReset(0.2)
+    var osc4 = new Maximilian.maxiOsc();
+    var osc5 = new Maximilian.maxiOsc();
+    var osc6 = new Maximilian.maxiOsc();
+    osc6.phaseReset(0.5)
+    var osc7 = new Maximilian.maxiOsc();
+    osc7.phaseReset(0.62)
+    var filter = new Maximilian.maxiFilter();
+    var amp;
+    var time = 0;
+    function play() {
+        // console.log(wave)
+        // pitch = 261.63
+        var pitch = 261.63
+        var time = input.getValue();
+        // console.log(pitch)
+        // return [osc1.coswave (pitch) * osc3.sinewave(pitch)*0.5 + filter.hires((0-osc2.saw(pitch)) * 0.2, osc5.square(pitch, 1), 10)+ osc4.sinewave(pitch*16) * 0.05, osc1.coswave (pitch) + osc6.saw (pitch)*0.1 + osc7.square (pitch, 0.5) * 0.1 + osc4.sinewave (pitch*16) * 0.05]
+        return [osc1.coswave(osc5.coswave(pitch/4)*pitch) + osc6.sinewave(pitch/2^(time-3))*0.5 + osc7.saw(pitch/4, 0.5) * time/10 + osc4.sinewave(pitch*16) * 0.05]
+    }
+</script>
+
+<!-- Main Javascript code goes here -->
+<script language="javascript">
+    let maxi;
+    // let pitch;
+    initAudioEngine().then((dspEngine)=>{
+        maxi = dspEngine;
+        setup();
+        //Get audio code from script element
+        maxi.setAudioCode("part2AudioScript");
+    })
+
+    const countDown = document.getElementById('countDown');
+    var playing = false;
+    var count = 0;
+    var sess = 0
+    function setTime() {
+        count += 1;
+        if (count == 30) {
+            count = 0;
+            setTime();
+        } else {
+            if (parseInt(count / 5) != sess) {
+                sess = parseInt(count / 5)
+                maxi.send("onChange", [sess])
+            }
+            setTimeout(function () {
+                setTime()
+            }, 1000)
+        }
+
+    }
+
+    ///////YOU CAN IGNORE ME - CODE FOR SCOPES///////
+    let setup = ()=> {
+        maxi.hush()
+        Nexus.context = maxi.audioWorkletNode.context;
+        new Nexus.Oscilloscope('oscilloscope', {'size': [400,100]}).connect(maxi.audioWorkletNode);
+        new Nexus.Spectrogram('spectrogram', {'size': [400,100]}).connect(maxi.audioWorkletNode);
+        const playButton2 = document.getElementById('playButton2');
+
+        // maxi.send("fromClick", 261.63)
+        // pitch = 261.63
+
+
+        let playAudio2 = () => {
+            playButton2.innerHTML  = maxi.play() ? "STOP":"PLAY"
+        }
+        playButton2.addEventListener("click", () => {
+            maxi.send("onChange", [0])
+            setTime()
+            playAudio2()
+        })
+    }
+    ///////////////////////////////////////////////
+</script>
+</body>
+</html>
