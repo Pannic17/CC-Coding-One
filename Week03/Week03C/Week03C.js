@@ -1,3 +1,5 @@
+// noinspection EqualityComparisonWithCoercionJS
+
 let canvas;
 let context;
 let randomLines;
@@ -22,18 +24,47 @@ window.onload = function () {
     context.lineCap = 'round';
 
     let size = 200;
-    let sides = 7;
+    let sides = 17;
+    let spread = Math.PI*2/sides
     context.save();
     context.translate(canvas.width/2, canvas.height/2);
     context.scale(1,1);
     context.rotate(0);
 
+    drawBranch(3);
+
+    function drawBranch(level) {
+        if (level != 0) {
+            context.beginPath();
+            context.moveTo(0,0);
+            context.lineTo(size, 0);
+            context.stroke();
+
+            context.save();
+            context.translate(size/2, 0);
+            context.rotate(spread);
+            context.scale(0.8,0.8);
+            drawBranch(level-1)
+            context.restore();
+
+            context.save();
+            context.translate(size/2, 0);
+            context.rotate(-spread);
+            context.scale(0.8,0.8);
+            drawBranch(level-1)
+            context.restore();
+        } else return;
+    }
+}
+
+function drawStar(sides) {
     for (let i=0; i<sides; i++) {
         context.beginPath();
         context.moveTo(0,0);
         context.lineTo(size, 0);
         context.stroke();
         context.rotate(Math.PI*2/sides);
+        context.scale(0.9,1);
     }
 }
 
