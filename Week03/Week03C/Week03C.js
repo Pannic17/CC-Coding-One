@@ -1,6 +1,6 @@
 // noinspection EqualityComparisonWithCoercionJS
 
-import {convertDegrees2Radians} from "./utils";
+// import {convertDegrees2Radians} from "./utils";
 
 let canvas;
 let context;
@@ -26,14 +26,21 @@ window.onload = function () {
     context.lineCap = 'round';
 
     let size = 200;
-    let sides = 17;
-    let spread = Math.PI*2/sides
+    let level = 4;
+    let sides = 3;
+    let scale = 0.5;
+    let degree = 45;
+    let branches = 2;
     context.save();
-    context.translate(canvas.width/2, canvas.height/2);
+    // context.translate(canvas.width/2, canvas.height/2);
     context.scale(1,1);
     context.rotate(0);
 
-    drawBranch(3);
+    drawSnowFlake(size, level, sides, scale, degree, branches);
+}
+
+function drawSnowFlake(size, level, sides, scale, degree, branches) {
+    drawFractal(sides, level);
 
     function drawBranch(level) {
         if (level != 0) {
@@ -42,33 +49,44 @@ window.onload = function () {
             context.lineTo(size, 0);
             context.stroke();
 
-            context.save();
-            context.translate(size/2, 0);
-            context.rotate(convertDegrees2Radians(90));
-            context.scale(0.8,0.8);
-            drawBranch(level-1)
-            context.restore();
+            for (let i=0; i<branches; i++) {
+                context.save();
+                context.translate(size-(size/branches)*i, 0);
+                context.rotate(convertDegrees2Radians(degree));
+                context.scale(scale,scale);
+                drawBranch(level-1)
+                context.restore();
 
-            context.save();
-            context.translate(size/2, 0);
-            context.rotate(-convertDegrees2Radians(90));
-            context.scale(0.8,0.8);
-            drawBranch(level-1)
-            context.restore();
+                context.save();
+                context.translate(size-(size/branches)*i, 0);
+                context.rotate(-convertDegrees2Radians(degree));
+                context.scale(scale,scale);
+                drawBranch(level-1)
+                context.restore();
+            }
+
         } else return;
     }
-}
 
-function drawStar(sides) {
-    for (let i=0; i<sides; i++) {
-        context.beginPath();
-        context.moveTo(0,0);
-        context.lineTo(size, 0);
-        context.stroke();
-        context.rotate(Math.PI*2/sides);
-        context.scale(0.9,1);
+    function drawFractal(sides, level) {
+        context.save();
+        context.translate(canvas.width/2, canvas.height/2);
+        // context.scale(1,1);
+        // context.rotate(0);
+        for (let i=0; i<sides; i++) {
+            // context.beginPath();
+            // context.moveTo(0,0);
+            // context.lineTo(size, 0);
+            // context.stroke();
+            context.rotate(Math.PI*2/sides);
+            drawBranch(level);
+            // context.scale(0.9,1);
+        }
+        context.restore();
     }
 }
+
+
 
 window.addEventListener('resize', function () {
     // cancelAnimationFrame(randomLines.animation);
@@ -114,7 +132,9 @@ function drawColorRect() {
 
 
 
-
+function convertDegrees2Radians(degree) {
+    return degree * Math.PI / 180
+}
 
 
 class RandomLinesEffect {
