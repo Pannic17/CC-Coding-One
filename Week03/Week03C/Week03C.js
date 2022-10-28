@@ -1,5 +1,7 @@
 // noinspection EqualityComparisonWithCoercionJS
 
+import {convertDegrees2Radians} from "./utils";
+
 let canvas;
 let context;
 let randomLines;
@@ -42,14 +44,14 @@ window.onload = function () {
 
             context.save();
             context.translate(size/2, 0);
-            context.rotate(spread);
+            context.rotate(convertDegrees2Radians(90));
             context.scale(0.8,0.8);
             drawBranch(level-1)
             context.restore();
 
             context.save();
             context.translate(size/2, 0);
-            context.rotate(-spread);
+            context.rotate(-convertDegrees2Radians(90));
             context.scale(0.8,0.8);
             drawBranch(level-1)
             context.restore();
