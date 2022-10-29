@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Coding One Week 03</title>
+<!--    <link rel="stylesheet" href="Week04A.css">-->
+</head>
+<body>
+<!--    <canvas id="canvas"></canvas>-->
+    <canvas id="myCanvas" width="400" height="400"></canvas>
+    <canvas id="myCanvas2" width="400" height="400"></canvas>
+    <h1>Image Gradients</h1>
+
+    <p style="margin:10px;">This code shows you how to get the gradient of an image in both X and Y.</p>
+    <p style="margin:10px;"> We're using a 'kernel' of -1 0 1 in both X and Y</p>
+    <p style="margin:10px;"> But we're taking a short-cut (no convolution kernel - just manual multiplication of pixels)</p>
+    <p style="margin:20px;">imageData2.data[((imageWidth * i) + j) * 4] = (-1*(data[((imageWidth * i) + j-1) * 4])) + (data[((imageWidth * i) + j+1) * 4]);
+    </p>
+    <p style="margin:10px;"> Much simpler to code and less messing about</p>
+
+    <p style="margin:10px;">Can you calculate the magnitude of the gradients?</p>
+
+
+    <script type="module" src="Week04A.js"></script>
+<!--    <script type="module" src="utils.js"></script>-->
+</body>
+</html>
