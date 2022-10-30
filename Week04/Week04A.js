@@ -28,6 +28,29 @@ imageObj.onload = function () {
     // This will hold the Y gradient
     var imageData3 = context.getImageData(0, 0, imageWidth, imageHeight);
 
+    let testImageData = new ImageArray(imageData.data, imageWidth, imageHeight);
+    let calImageData = testImageData.calculate(function (array, position, width) {
+        // console.log(array[position-width]);
+        let newPixel;
+        if (array[position-width] == undefined) {
+            newPixel = new ImagePixel([255,255,255,255], 'RGB')
+        } else {
+            newPixel = new ImagePixel([
+                255-array[position-width].R(),
+                255-array[position-width].G(),
+                255-array[position-width].B(),
+                array[position-width].A(),
+            ], 'RGB')
+        }
+        return newPixel
+    })
+    console.log(testImageData);
+    // console.log(calImageData);
+    let testRaw = context.createImageData(imageWidth, imageHeight);
+    testRaw.data.set(calImageData.raw());
+    console.log(testRaw)
+    context.putImageData(testRaw, 0, 0);
+
 
 
 
@@ -61,13 +84,18 @@ imageObj.onload = function () {
         }
     }
     // view X gradient
-    context.putImageData(imageData2,0,0);
+    // context.putImageData(imageData2,0,0);
 
     console.log(imageData2)
 
     // view Y gradient
     //  context.putImageData(imageData3,0,0);
 }
+
+class Kernel {
+
+}
+
 
 class ImageArray {
     constructor(imageData, width, height) {
@@ -77,8 +105,11 @@ class ImageArray {
         this._height = height;
         for (let i = 0; i < imageData.length; i += 4) {
             let pixel = imageData.slice(i, i+4);
-            this._data.push(new ImageDataRGBA(pixel));
+            // console.log("RUN")
+            this._data.push(new ImagePixel(pixel, 'RGB'));
+            // console.log(this._data[i/4])
         }
+        console.log(this._data)
     }
 
     fromRGBA(rgbaData, width, height) {
@@ -108,27 +139,45 @@ class ImageArray {
         return this._height;
     }
 
-    calculate(operations) {
+    /**
+     * @param operation
+     * function(Array<ImageDataRGBA>, index of pixel, image width) {
+     *     return new ImagePixel
+     * }
+     * @returns {ImageArray}
+     */
+    calculate(operation) {
         let array = []
-        for (let p = 0; p < this._width; p++) {
-            for (let o = 0; o < operations.length; o++) {
-                array.push(operations[o](this, p));
-            }
+        for (let p = 0; p < this._data.length; p++) {
+            array.push(operation(this._data, p, this.width()));
         }
+        console.log(array);
         return this.fromRGBA(array, this._width, this._height);
     }
 }
 
-class ImageDataRGBA {
-    constructor(dataArray) {
-        this._r = dataArray[0]
-        this._g = dataArray[1]
-        this._b = dataArray[2]
-        this._a = dataArray[3]
-        this._hsv = this.rgb2HSV()
-        this._h = this._hsv[0]
-        this._s = this._hsv[1]
-        this._v = this._hsv[2]
+class ImagePixel {
+    constructor(dataArray, mode) {
+        if (mode == 'RGB' || mode == null) {
+            this._r = dataArray[0]
+            this._g = dataArray[1]
+            this._b = dataArray[2]
+            this._a = dataArray[3] ?? 1
+            let hsv = this.rgb2HSV(this._r, this._g, this._b)
+            this._h = hsv[0]
+            this._s = hsv[1]
+            this._v = hsv[2]
+            // console.log(this)
+        } else if (mode == 'HSV') {
+            this._h = dataArray[0]
+            this._s = dataArray[1]
+            this._v = dataArray[2]
+            this._a = dataArray[3] ?? 1
+            let rgb = this.hsv2RGB(this._h, this._s, this._v)
+            this._r = rgb[0]
+            this._g = rgb[1]
+            this._b = rgb[2]
+        }
     }
 
     R() {
@@ -147,13 +196,13 @@ class ImageDataRGBA {
         return this._a
     }
 
-    rgb2HSV() {
-        const r = this._r / 255;
-        const g = this._g / 255;
-        const b = this._b / 255;
+    rgb2HSV(r, g, b) {
+        const ar = r / 255;
+        const ag = g / 255;
+        const ab = b / 255;
 
-        const max = Math.max (r, g, b);
-        const min = Math.min (r, g, b);
+        const max = Math.max (ar, ag, ab);
+        const min = Math.min (ar, ag, ab);
 
         let h, s, v = max;
         const d = max - min;
@@ -162,38 +211,34 @@ class ImageDataRGBA {
             h = 0;
         } else {
             switch (max) {
-                case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-                case g: h = (b - r) / d + 2; break;
-                case b: h = (r - g) / d + 4; break;
+                case ar: h = (ag - ab) / d + (ag < ab ? 6 : 0); break;
+                case ag: h = (ab - ar) / d + 2; break;
+                case ab: h = (ar - ag) / d + 4; break;
             }
             h /= 6;
         }
         return [ h, s, v ];
     }
 
-    hsv2RGB() {
+    hsv2RGB(h, s, v) {
         let r, g, b;
 
-        const i = Math.floor (this._h * 6);
-        const f = this._h * 6 - i;
-        const p = this._v * (1 - this._s);
-        const q = this._v * (1 - f * this._s);
-        let t = this._v * (1 - (1 - f) * this._s);
+        const i = Math.floor (h * 6);
+        const f = h * 6 - i;
+        const p = v * (1 - s);
+        const q = v * (1 - f * s);
+        let t = v * (1 - (1 - f) * s);
 
         // noinspection CommaExpressionJS
         switch (i % 6) {
-            case 0: r = this._s, g = t, b = p; break;
-            case 1: r = q, g = this._v, b = p; break;
-            case 2: r = p, g = this._v, b = t; break;
-            case 3: r = p, g = q, b = this._v; break;
-            case 4: r = t, g = p, b = this._v; break;
-            case 5: r = this._v, g = p, b = q; break;
+            case 0: r = s, g = t, b = p; break;
+            case 1: r = q, g = v, b = p; break;
+            case 2: r = p, g = v, b = t; break;
+            case 3: r = p, g = q, b = v; break;
+            case 4: r = t, g = p, b = v; break;
+            case 5: r = v, g = p, b = q; break;
         }
         return [ r * 255, g * 255, b * 255 ];
-    }
-
-    HSV() {
-        return this._hsv;
     }
 
     H() {

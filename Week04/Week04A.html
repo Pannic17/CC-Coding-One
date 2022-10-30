@@ -9,19 +9,50 @@
 <!--    <canvas id="canvas"></canvas>-->
     <canvas id="myCanvas" width="400" height="400"></canvas>
     <canvas id="myCanvas2" width="400" height="400"></canvas>
-    <h1>Image Gradients</h1>
+<div>
+    <h1>Week 04 by PanNic</h1>
+    <div>
+        <h2>A. About the Program</h2>
+        <p>
+            Customized ImageArray & ImagePixel class to manage pixels of ImageData<br>
+            Automatically calculate HSV value to enable manipulation of HSV instead of RGB<br>
+            Simply use ImageArray.calculate() function to calculate pixel values
+        </p>
+        <div>
+            <h3>ImageArray.calculate(function) document</h3>
+            <p>
+                ImageArray.calculate(function(array, position, width) {<br>
+                &emsp;return new ImagePixel<br>
+                })<br>
+                the function will re-calculate every pixel according to the input function operation
+                and return a new ImageArray<br>
+            </p>
+        </div>
+        <div>
+            <h4>Parameters</h4>
+            <p>
+                array: the reformat ImageArray of original image<br>
+                position: the position of pixel that currently under calculate<br>
+                width: the width of original image<br>
+                new ImagePixel: new pixel value after calculation<br>
+            </p>
+        </div>
+    </div>
 
-    <p style="margin:10px;">This code shows you how to get the gradient of an image in both X and Y.</p>
-    <p style="margin:10px;"> We're using a 'kernel' of -1 0 1 in both X and Y</p>
-    <p style="margin:10px;"> But we're taking a short-cut (no convolution kernel - just manual multiplication of pixels)</p>
-    <p style="margin:20px;">imageData2.data[((imageWidth * i) + j) * 4] = (-1*(data[((imageWidth * i) + j-1) * 4])) + (data[((imageWidth * i) + j+1) * 4]);
-    </p>
-    <p style="margin:10px;"> Much simpler to code and less messing about</p>
+</div>
 
-    <p style="margin:10px;">Can you calculate the magnitude of the gradients?</p>
+
+
 
 
     <script type="module" src="Week04A.js"></script>
 <!--    <script type="module" src="utils.js"></script>-->
 </body>
 </html>
+
+<style>
+    h4{
+        margin: 0;
+        padding: 0;
+    }
+</style>
