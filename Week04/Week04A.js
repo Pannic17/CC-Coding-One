@@ -30,7 +30,7 @@ imageObj.onload = function () {
 
     let testImageData = new ImageArray(imageData.data, imageWidth, imageHeight);
     let calImageData = testImageData.calculate(function (data, width, height) {
-        return new Filter2D (data, width, height).averageFilter (7);
+        return new Filter2D (data, width, height).averageFilter(7);
     })
     let testRaw = context.createImageData(imageWidth, imageHeight);
     testRaw.data.set(calImageData.raw());
@@ -216,11 +216,14 @@ class Filter2D {
 
     }
 
-    threshold(size) {
+    adaptiveThreshold(size) {
 
     }
 
     directionalChromaticAbberation(size, direction) {
+        let kernelR = [];
+        let kernelG = [];
+        let kernelB = [];
 
     }
 }
@@ -292,7 +295,7 @@ class ImagePixel {
             this._r = dataArray[0]
             this._g = dataArray[1]
             this._b = dataArray[2]
-            this._a = dataArray[3] ?? 1
+            this._a = dataArray[3] ?? 255
             let hsv = this.rgb2HSV(this._r, this._g, this._b)
             this._h = hsv[0]
             this._s = hsv[1]
@@ -302,7 +305,7 @@ class ImagePixel {
             this._h = dataArray[0]
             this._s = dataArray[1]
             this._v = dataArray[2]
-            this._a = dataArray[3] ?? 1
+            this._a = dataArray[3] ?? 255
             let rgb = this.hsv2RGB(this._h, this._s, this._v)
             this._r = rgb[0]
             this._g = rgb[1]

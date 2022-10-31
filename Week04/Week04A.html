@@ -12,11 +12,12 @@
 <div>
     <h1>Week 04 by PanNic</h1>
     <div>
-        <h2>A. About the Program</h2>
+        <h2>A. About the Program: Core</h2>
         <p>
-            Customized ImageArray & ImagePixel class to manage pixels of ImageData<br>
+            Implemented <b>ImageArray</b> & <b>ImagePixel</b> class to manage pixels of ImageData<br>
+            Built-in conversion between raw imageData and self-implemented ImageArray<br>
             Automatically calculate HSV value to enable manipulation of HSV instead of RGB<br>
-            Simply use ImageArray.calculate() function to calculate pixel values
+            Simply use <b>ImageArray.calculate()</b> function to calculate pixel values
         </p>
         <div>
             <h3>ImageArray.calculate(function) document</h3>
@@ -24,19 +25,29 @@
                 ImageArray.calculate(function(array, width, height) {<br>
                 &emsp;return Array&lt;ImagePixel&gt;<br>
                 })<br>
-                the function will re-calculate every pixel according to the input function operation
+                input a function that re-calculate every pixel according to the input function operation
                 and return a new ImageArray<br>
             </p>
         </div>
         <div>
             <h4>Parameters</h4>
             <p>
-                array: the reformat ImageArray of original image<br>
-                width: the width of original image<br>
-                height: the height of original image<br>
-                new ImagePixel: new pixel value after calculation<br>
+                <b>array</b>: the reformat ImageArray of original image<br>
+                <b>width</b>: the width of original image<br>
+                <b>height</b>: the height of original image<br>
+                new <b>ImagePixel</b>: new pixel value after calculation<br>
             </p>
         </div>
+    </div>
+    <div>
+        <h2>B. Kernels and Filters</h2>
+        <p>
+            Implemented <b>Filter2D</b> class that contains lots basic built-in filters<br>
+            Image Thresholding: adaptive thresholding<br>
+            Blur & Smoothing: average filter, median filter, bilateral filter, gaussian filter<br>
+            Morphological Transformation: erosion, dilation, morphological gradient<br>
+            Edge Detection: sobel, scharr, laplacian, canny<br>
+        </p>
     </div>
 
 </div>
