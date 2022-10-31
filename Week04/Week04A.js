@@ -2,80 +2,104 @@
 
 var mouseX;
 var mouseY;
-var imageObj = new Image();
+const imageObj = new Image ();
 imageObj.src = "Test4.png";
 //imageObj.src = "pic2.jpg";
 console.log( document.body.clientHeight );
-var canvas = document.getElementById('myCanvas');
-var canvas2 = document.getElementById('myCanvas2');
+const fixCanvas = document.getElementById ('fixCanvas');
+const canvasHead = document.getElementById ('headCanvas');
+const canvasAverage = document.getElementById('canvasAverage');
+const canvasGaussian = document.getElementById('canvasGaussian');
+const canvasBilateral = document.getElementById('canvasBilateral');
+const canvasSharpen = document.getElementById('canvasSharpen');
+const canvasSobel = document.getElementById('canvasSobel');
+const canvasScharr = document.getElementById('canvasScharr');
+const canvasFeldman = document.getElementById('canvasFeldman');
 
+
+canvasAverage.style.display = 'none';
+canvasBilateral.style.display = "none";
+canvasSobel.style.display = 'none';
+canvasScharr.style.display = 'none';
 
 imageObj.onload = function () {
-    var context = canvas.getContext('2d');
-    var context2 = canvas2.getContext('2d');
-    var imageWidth = imageObj.width;
-    var imageHeight = imageObj.height;
+    const fixContext = fixCanvas.getContext ('2d');
+    const imageWidth = imageObj.width;
+    const imageHeight = imageObj.height;
 
-    context2.drawImage(imageObj, 0, 0);
+    fixContext.drawImage (imageObj, 0, 0);
+    const original = fixContext.getImageData(0, 0, imageWidth, imageHeight);
+    const source = new ImageArray (original.data, imageWidth, imageHeight);
+    console.log (original)
 
-    var imageData = context2.getImageData(0, 0, imageWidth, imageHeight);
-    var data = imageData.data;
-    console.log(imageData)
-
-    // This will hold the X gradient
-    var imageData2 = context.getImageData(0, 0, imageWidth, imageHeight);
-
-    // This will hold the Y gradient
-    var imageData3 = context.getImageData(0, 0, imageWidth, imageHeight);
-
-    let testImageData = new ImageArray(imageData.data, imageWidth, imageHeight);
-    let calImageData = testImageData.calculate(function (data, width, height) {
-        return new Filter2D (data, width, height).averageFilter(7);
+    let dataHead = source.calculate (function (data, width, height) {
+        return new Filter2D(data, width, height).sharpen(3, 1);
     })
-    let testRaw = context.createImageData(imageWidth, imageHeight);
-    testRaw.data.set(calImageData.raw());
-    console.log(testRaw)
-    context.putImageData(testRaw, 0, 0);
+    addImage (canvasHead, source, dataHead);
+    setTimeout(function () {
+        dataHead = null
+    }, 500)
 
 
+    document.getElementById('showAverage').addEventListener('click', () => {
+        canvasAverage.style.display = 'block';
+        const sourceAverage = new ImageArray (original.data, imageWidth, imageHeight);
+        let dataAverage = sourceAverage.calculate(function (data, width, height) {
+            return new Filter2D(data, width, height).averageFilter(7);
+        })
+        addImage(canvasAverage, dataAverage);
+    })
+
+    let dataGaussian = source.calculate(function (data, width, height) {
+        return new Filter2D(data, width, height).gaussian(5, 2);
+    })
+    addImage(canvasGaussian, dataGaussian);
+
+    document.getElementById('showBilateral').addEventListener('click', () => {
+        canvasBilateral.style.display = "block";
+        const sourceBilateral = new ImageArray (original.data, imageWidth, imageHeight);
+        let dataBilateral = sourceBilateral.calculate(function (data, width, height) {
+            return new Filter2D(data, width, height).bilateral(5, 1);
+        })
+        addImage(canvasBilateral, dataBilateral);
+    })
+
+    let dataSharpen = source.calculate(function (data, width, height) {
+        return new Filter2D(data, width, height).sharpen(3, 1);
+    })
+    addImage(canvasSharpen, dataSharpen);
+
+    document.getElementById('showSobel').addEventListener('click', () => {
+        canvasSobel.style.display = "block";
+        const sourceSobel = new ImageArray (original.data, imageWidth, imageHeight);
+        let dataSobel = sourceSobel.calculate(function (data, width, height) {
+            return new Filter2D(data, width, height).sobel();
+        })
+        addImage(canvasSobel, dataSobel);
+    })
+
+    document.getElementById('showScharr').addEventListener('click', () => {
+        canvasScharr.style.display = "block";
+        const sourceScharr = new ImageArray (original.data, imageWidth, imageHeight);
+        let dataScharr = sourceScharr.calculate(function (data, width, height) {
+            return new Filter2D(data, width, height).scharr();
+        })
+        addImage(canvasScharr, dataScharr);
+    })
+
+    const sourceFeldman = new ImageArray (original.data, imageWidth, imageHeight);
+    let dataFeldman = sourceFeldman.calculate(function (data, width, height) {
+        return new Filter2D(data, width, height).feldman();
+    })
+    addImage(canvasFeldman, dataFeldman);
 
 
-
-    // iterate over all pixels
-    for(var i = 1; i < imageHeight-1; i++) {
-
-        // This is the row above
-        var collm1=(i-1)*imageWidth;
-        // This is the row below
-        var collp1=(i+1)*imageWidth;
-
-        // loop through each row
-        for(var j = 1; j < imageWidth-1; j++) {
-
-            // This is the X gradient
-            imageData2.data[((imageWidth * i) + j) * 4] = (-1*(data[((imageWidth * i) + j-1) * 4])) + (data[((imageWidth * i) + j+1) * 4]);
-            imageData2.data[((imageWidth * i) + j) * 4+1] = (-1*(data[((imageWidth * i) + j-1) * 4+1])) + (data[((imageWidth * i) + j+1) * 4]);
-            imageData2.data[((imageWidth * i) + j) * 4+2] = (-1*(data[((imageWidth * i) + j-1) * 4+2])) + (data[((imageWidth * i) + j+1) * 4]);
-            imageData2.data[((imageWidth * i) + j) * 4+3] = 255;
-
-// This is the Y gradient
-            imageData3.data[((imageWidth * i) + j) * 4] = (-1*(data[((collm1) + j-1) * 4])) + (data[((collp1) + j+1) * 4]);
-            imageData3.data[((imageWidth * i) + j) * 4+1] = (-1*(data[((collm1) + j-1) * 4+1])) + (data[((collp1) + j+1) * 4]);
-            imageData3.data[((imageWidth * i) + j) * 4+2] = (-1*(data[((collm1) + j-1) * 4+2])) + (data[((collp1) + j+1) * 4]);
-            imageData3.data[((imageWidth * i) + j) * 4+3] = 255;
-
-// Can you calculate the magnitude and direction vector?
-
-
-        }
+    function addImage (canvas, data) {
+        const context = canvas.getContext ('2d');
+        let rawData = context.createImageData (imageWidth, imageHeight);
+        rawData.data.set (data.raw ());
+        context.putImageData (rawData, 0, 0);
     }
-    // view X gradient
-    // context.putImageData(imageData2,0,0);
-
-    console.log(imageData2)
-
-    // view Y gradient
-    //  context.putImageData(imageData3,0,0);
 }
 
 class Filter2D {
@@ -85,22 +109,22 @@ class Filter2D {
         this._height = height;
     }
 
-    _applyKernelOperation(operation) {
+    _applyKernelOperation(operation, mode) {
         let array = []
         for (let i = 0; i < this._height; i++) {
             for (let j = 0; j < this._width; j++) {
-                let position = i * this._width + j;
-                let pixel = this._kernelOperation(operation, position)
+                // let position = i * this._width + j;
+                let pixel = this._kernelOperation(operation, i, j)
                 pixel = this._adjustValue(pixel);
-                array.push(new ImagePixel(pixel, 'RGB'));
+                array.push(new ImagePixel(pixel, mode ?? 'RGB'));
             }
         }
         // console.log(array)
         return array;
     }
 
-    _kernelOperation(operation, position) {
-        return operation(position);
+    _kernelOperation(operation, x, y) {
+        return operation(x, y);
     }
 
     _calculatePixelRGB(kernels, size, position, data, width) {
@@ -120,6 +144,10 @@ class Filter2D {
         return value;
     }
 
+    _calculatePixelHSV() {
+
+    }
+
     _adjustValue(value) {
         for (let i = 0; i < value.length; i++) {
             if (value[i] > 255) {
@@ -131,19 +159,65 @@ class Filter2D {
         return value
     }
 
+    _expand4Convolution(size) {
+        let num = (size-1)/2
+        let top = this._data.slice(0, this._width);
+        let bottom = this._data.slice(this._data.length-this._width, this._data.length);
+        for (let row = 0; row < num; row++) {
+            for (let col = 0; col < this._width; col++) {
+                this._data.splice(0, 0, top[col])
+                this._data.splice(this._data.length, 0, bottom[col])
+            }
+        }
+        this._height += size - 1
+        // console.log(this._data)
+        for (let index = 0; index < this._height; index += 1) {
+            // console.log("LINE")
+            let line_start = index * (this._width + size - 1);
+            let pixel_start = this._data[line_start];
+            let line_end = index * (this._width + size - 1) + this._width + 2;
+            let pixel_end = this._data[line_end - 2];
+            for (let col = 0; col < ((size-1)/2); col++){
+                this._data.splice(line_start, 0, pixel_start);
+                this._data.splice(line_end, 0, pixel_end);
+            }
+        }
+        this._width += size - 1
+        // console.log(this._data)
+    }
+
+    _deletedEdges(array, size) {
+        let num = (size-1)/2
+        for (let row = 0; row < num; row++) {
+            array.splice(0, this._width)
+            array.splice((array.length-this._width), this._width)
+        }
+        // console.log(array)
+        this._height -= size - 1
+        this._width -= size - 1
+        for (let index = 0; index < this._height; index += 1) {
+            let line_start = index * this._width;
+            let line_end = index * this._width + this._width;
+            array.splice(line_start, num);
+            array.splice(line_end, num);
+        }
+        // console.log(array)
+        return array;
+    }
+
     _operationBasic(kernel, size, _this) {
         let kernels = [kernel, kernel, kernel]
-        return function (position) {
+        return function (x, y) {
+            let position = x * _this._width + y;
             return  _this._calculatePixelRGB(kernels, size, position, _this._data, _this._width);
-            // console.log(p)
-            // return p;
         }
     }
 
     _operationDifferentiate(kernel1, kernel2, _this) {
         let kernels1 = [kernel1, kernel1, kernel1]
         let kernels2 = [kernel2, kernel2, kernel2]
-        return function (position) {
+        return function (x, y) {
+            let position = x * _this._width + y;
             let pixelValue = []
             let result1 = _this._calculatePixelRGB(kernels1, 3, position, _this._data, _this._width);
             let result2 = _this._calculatePixelRGB(kernels2, 3, position, _this._data, _this._width);
@@ -153,6 +227,48 @@ class Filter2D {
             }
             return pixelValue
         }
+    }
+
+    _operationBilateral(sigma, size, _this) {
+        return function (p, q) {
+            let kernel = []
+            let sum = 0;
+            let mid = (size - 1) / 2
+            for (let i = 0; i < size; i++) {
+                let x = i - mid;
+                kernel.push([]);
+                for (let j = 0; j < size; j++) {
+                    let y = j - mid;
+                    let posDX = Math.abs(x);
+                    let posDY = Math.abs(y);
+                    let distD = Math.exp(-(posDX*posDX+posDY*posDY)/(2*sigma*sigma))
+                    let greyD = Math.abs(
+                        (_this._data[(p+x)*_this._width+(q+y)]?.V() ?? 0)
+                        - (_this._data[p*_this._width+q]?.V() ?? 0)
+                    )
+                    let value = distD*Math.exp(-(greyD*greyD)/(2*sigma*sigma))
+                    kernel[i].push(value);
+                    sum += value;
+                }
+            }
+            for (let i = 0; i < size; i++) {
+                for (let j = 0; j < size; j++) {
+                    kernel[i][j] /= sum;
+                }
+            }
+            let kernels = [kernel, kernel, kernel]
+            let position = p * _this._width + q;
+            return  _this._calculatePixelRGB(kernels, size, position, _this._data, _this._width);
+        }
+    }
+
+
+    _operationBitwise(kernel1, kernel2, _this) {
+
+    }
+
+    _operationMultiChannel(kernelR, kernelG, kernelB, _this) {
+
     }
 
     laplacian() {
@@ -170,7 +286,7 @@ class Filter2D {
         )
     }
 
-    scharr() {
+    feldman() {
         let kernel1 = [[-3, 0, 3], [-10, 0, 10], [-3, 0, 3]]
         let kernel2 = [[-3, -10, -3], [0, 0, 0], [3, 10, 3]]
         return this._applyKernelOperation(
@@ -178,16 +294,81 @@ class Filter2D {
         )
     }
 
+    scharr() {
+        let kernel1 = [[-47, 0, 47], [-162, 0, 162], [-47, 0, 47]]
+        let kernel2 = [[-47, -162, -47], [0, 0, 0], [47, 162, 47]]
+        return this._applyKernelOperation(
+            this._operationDifferentiate(kernel1, kernel2, this)
+        )
+    }
+
+    sharpen(size, amount) {
+        let kernel = []
+        let sum = 0;
+        let step = 0
+        let mid = (size-1)/2
+        for (let i = 0; i < size; i++) {
+            kernel.push([]);
+            for (let j = 0; j < size; j++) {
+                if (i == mid && j == mid) {
+                    kernel[i].push(1)
+                } else if (Math.abs(j - mid) > step) {
+                    kernel[i].push(0)
+                } else {
+                    kernel[i].push(-amount)
+                    sum += amount
+                }
+            }
+            if (i < mid) {
+                step += 1
+            } else {
+                step -= 1
+            }
+        }
+        kernel[mid][mid] += sum
+        // let kernel = [[0, -1, 0], [-1, 5, -1], [0, -1, 0]]
+        return this._applyKernelOperation(
+            this._operationBasic(kernel, size, this)
+        )
+    }
+
     canny(size) {
 
     }
 
-    gaussian(size) {
-
+    gaussian(size, sigma) {
+        sigma = sigma ?? 1
+        let kernel = []
+        let sum = 0;
+        let mid = (size - 1) / 2
+        for (let i = 0; i < size; i++) {
+            let x = i - mid
+            kernel.push([]);
+            for (let j = 0; j < size; j++) {
+                let y = j - mid
+                let value = 1/(2*Math.PI+sigma*sigma)*Math.exp(-(x*x+y*y)/(2*sigma*sigma))
+                kernel[i].push(value);
+                sum += value;
+            }
+        }
+        for (let i = 0; i < size; i++) {
+            for (let j = 0; j < size; j++) {
+                kernel[i][j] /= sum;
+            }
+        }
+        console.log(kernel);
+        return this._applyKernelOperation(
+            this._operationBasic(kernel, size, this)
+        )
     }
 
-    bilateral(size) {
-
+    bilateral(size, sigma) {
+        this._expand4Convolution(size)
+        let array = this._applyKernelOperation(
+            this._operationBilateral(sigma, size, this)
+        )
+        array = this._deletedEdges(array, size)
+        return array;
     }
 
     averageFilter(size) {
@@ -205,7 +386,7 @@ class Filter2D {
     }
 
     medianFilter(size) {
-
+        //TODO: Median Filter requires a more complex implementation of algorithm
     }
 
     dilate(image, size) {
@@ -224,7 +405,6 @@ class Filter2D {
         let kernelR = [];
         let kernelG = [];
         let kernelB = [];
-
     }
 }
 
@@ -240,7 +420,7 @@ class ImageArray {
             this._data.push(new ImagePixel(pixel, 'RGB'));
             // console.log(this._data[i/4])
         }
-        console.log(this._data)
+        // console.log(this._data)
     }
 
     fromRGBA(rgbaData, width, height) {
@@ -284,8 +464,12 @@ class ImageArray {
         //         array.push(operation(this._data, i, j, this._width));
         //     }
         // }
-        console.log(array);
+        // console.log(array);
         return this.fromRGBA(array, this._width, this._height);
+    }
+
+    convert2Grey() {
+
     }
 }
 
