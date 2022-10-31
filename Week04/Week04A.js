@@ -3,7 +3,7 @@
 var mouseX;
 var mouseY;
 var imageObj = new Image();
-imageObj.src = "Test2.png";
+imageObj.src = "Test4.png";
 //imageObj.src = "pic2.jpg";
 console.log( document.body.clientHeight );
 var canvas = document.getElementById('myCanvas');
@@ -29,20 +29,30 @@ imageObj.onload = function () {
     var imageData3 = context.getImageData(0, 0, imageWidth, imageHeight);
 
     let testImageData = new ImageArray(imageData.data, imageWidth, imageHeight);
-    let calImageData = testImageData.calculate(function (array, position, width) {
-        // console.log(array[position-width]);
-        let newPixel;
-        if (array[position-width] == undefined) {
-            newPixel = new ImagePixel([255,255,255,255], 'RGB')
-        } else {
-            newPixel = new ImagePixel([
-                255-array[position-width].R(),
-                255-array[position-width].G(),
-                255-array[position-width].B(),
-                array[position-width].A(),
-            ], 'RGB')
-        }
-        return newPixel
+    let calImageData = testImageData.calculate(function (data, width, height) {
+        // let array = []
+        // for (let i = 0; i < height; i++) {
+        //     for (let j = 0; j < width; j++) {
+        //         let newPixel;
+        //         let position = i * width + j
+        //         newPixel = new ImagePixel([
+        //             255-data[position-width*10]?.R() ?? 0,
+        //             255-data[position-width*10]?.G() ?? 0,
+        //             255-data[position-width*10]?.B() ?? 0,
+        //             data[position-width*10]?.A() ?? 0,
+        //         ], 'RGB')
+        //         // if (data[position-width*10] == undefined) {
+        //         //     newPixel = new ImagePixel([255,255,255,255], 'RGB')
+        //         // } else {
+        //         //
+        //         // }
+        //         array.push(newPixel);
+        //     }
+        // }
+        let array = new Filter2D(data, width, height).laplacian();
+        console.log("OUTPUT")
+        console.log(array)
+        return array;
     })
     console.log(testImageData);
     // console.log(calImageData);
@@ -92,10 +102,142 @@ imageObj.onload = function () {
     //  context.putImageData(imageData3,0,0);
 }
 
-class Kernel {
+class Filter2D {
+    constructor(data, width, height) {
+        this._data = data;
+        this._width = width;
+        this._height = height;
+    }
 
+    _applyKernelOperation(operation) {
+        let array = []
+        for (let i = 0; i < this._height; i++) {
+            for (let j = 0; j < this._width; j++) {
+                let position = i * this._width + j;
+                let pixel = this._kernelOperation(operation, position)
+                pixel = this._adjustValue(pixel);
+                array.push(new ImagePixel(pixel, 'RGB'));
+            }
+        }
+        // console.log(array)
+        return array;
+    }
+
+    _kernelOperation(operation, position) {
+        return operation(position);
+    }
+
+    _calculatePixelRGB(kernels, size, position, data, width) {
+        let value = [0, 0, 0, 255]
+        let mid = (size - 1) / 2
+        for (let x = 0; x < size; x++) {
+            let ver = x - mid;
+            for (let y = 0; y < size; y++) {
+                let hor = y - mid
+                value[0] += (data[position + width * ver + hor]?.R() ?? 0) * kernels[0][x][y]
+                value[1] += (data[position + width * ver + hor]?.G() ?? 0) * kernels[1][x][y]
+                value[2] += (data[position + width * ver + hor]?.B() ?? 0) * kernels[2][x][y]
+                // value[3] += (this._data[position+this._width*ver+hor]?.A() ?? 0) * kernels[3][x][y]
+            }
+        }
+        // console.log(value)
+        return value;
+    }
+
+    _adjustValue(value) {
+        for (let i = 0; i < value.length; i++) {
+            if (value[i] > 255) {
+                value[i] = 255
+            } else if (value[i] < 0) {
+                value[i] = 0
+            }
+        }
+        return value
+    }
+
+    _operationBasic(kernel, size, _this) {
+        let kernels = [kernel, kernel, kernel]
+        return function (position) {
+            return  _this._calculatePixelRGB(kernels, size, position, _this._data, _this._width);
+            // console.log(p)
+            // return p;
+        }
+    }
+
+    _operationDifferentiate(kernel1, kernel2, _this) {
+        let kernels1 = [kernel1, kernel1, kernel1]
+        let kernels2 = [kernel2, kernel2, kernel2]
+        return function (position) {
+            let pixelValue = []
+            let result1 = _this._calculatePixelRGB(kernels1, 3, position, _this._data, _this._width);
+            let result2 = _this._calculatePixelRGB(kernels2, 3, position, _this._data, _this._width);
+            // console.log(result1);
+            for (let c = 0; c < 4; c++) {
+                pixelValue.push(Math.sqrt(result1[c]**2+result2[c]**2));
+            }
+            return pixelValue
+        }
+    }
+
+    laplacian() {
+        let kernel = [[0, 1, 0], [1, -4, 1], [0, 1, 0]]
+        return this._applyKernelOperation(
+            this._operationBasic(kernel, 3, this)
+        )
+    }
+
+    sobel() {
+        let kernel1 = [[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]]
+        let kernel2 = [[-1, -2, -1], [0, 0, 0], [1, 2, 1]]
+        return this._applyKernelOperation(
+            this._operationDifferentiate(kernel1, kernel2, this)
+        )
+    }
+
+    scharr() {
+        let kernel1 = [[-3, 0, 3], [-10, 0, 10], [-3, 0, 3]]
+        let kernel2 = [[-3, -10, -3], [0, 0, 0], [3, 10, 3]]
+        return this._applyKernelOperation(
+            this._operationDifferentiate(kernel1, kernel2, this)
+        )
+    }
+
+    canny(size) {
+
+    }
+
+    gaussian(size) {
+
+    }
+
+    bilateral(size) {
+
+    }
+
+    averageFilter(size) {
+
+    }
+
+    medianFilter(size) {
+
+    }
+
+    dilate(image, size) {
+
+    }
+
+    erode(size) {
+
+    }
+
+    threshold(size) {
+
+    }
+
+    directionalChromaticAbberation(size, direction) {
+
+    }
 }
-
 
 class ImageArray {
     constructor(imageData, width, height) {
@@ -147,10 +289,12 @@ class ImageArray {
      * @returns {ImageArray}
      */
     calculate(operation) {
-        let array = []
-        for (let p = 0; p < this._data.length; p++) {
-            array.push(operation(this._data, p, this.width()));
-        }
+        let array = operation(this._data, this._width, this._height);
+        // for (let i = 0; i < this._height; i++) {
+        //     for (let j = 0; j < this._width; j++) {
+        //         array.push(operation(this._data, i, j, this._width));
+        //     }
+        // }
         console.log(array);
         return this.fromRGBA(array, this._width, this._height);
     }
