@@ -30,32 +30,8 @@ imageObj.onload = function () {
 
     let testImageData = new ImageArray(imageData.data, imageWidth, imageHeight);
     let calImageData = testImageData.calculate(function (data, width, height) {
-        // let array = []
-        // for (let i = 0; i < height; i++) {
-        //     for (let j = 0; j < width; j++) {
-        //         let newPixel;
-        //         let position = i * width + j
-        //         newPixel = new ImagePixel([
-        //             255-data[position-width*10]?.R() ?? 0,
-        //             255-data[position-width*10]?.G() ?? 0,
-        //             255-data[position-width*10]?.B() ?? 0,
-        //             data[position-width*10]?.A() ?? 0,
-        //         ], 'RGB')
-        //         // if (data[position-width*10] == undefined) {
-        //         //     newPixel = new ImagePixel([255,255,255,255], 'RGB')
-        //         // } else {
-        //         //
-        //         // }
-        //         array.push(newPixel);
-        //     }
-        // }
-        let array = new Filter2D(data, width, height).laplacian();
-        console.log("OUTPUT")
-        console.log(array)
-        return array;
+        return new Filter2D (data, width, height).averageFilter (7);
     })
-    console.log(testImageData);
-    // console.log(calImageData);
     let testRaw = context.createImageData(imageWidth, imageHeight);
     testRaw.data.set(calImageData.raw());
     console.log(testRaw)
@@ -215,7 +191,17 @@ class Filter2D {
     }
 
     averageFilter(size) {
-
+        let average = 1 / size**2;
+        let kernel = []
+        for (let i = 0; i < size; i++) {
+            kernel.push([]);
+            for (let j = 0; j < size; j++) {
+                kernel[i].push(average);
+            }
+        }
+        return this._applyKernelOperation(
+            this._operationBasic(kernel, size, this)
+        )
     }
 
     medianFilter(size) {
@@ -397,6 +383,3 @@ class ImagePixel {
         return this._v;
     }
 }
-
-
-
