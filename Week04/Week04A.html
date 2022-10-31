@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Coding One Week 03</title>
+    <title>Coding One Week 04</title>
 <!--    <link rel="stylesheet" href="Week04A.css">-->
 </head>
 <body>
@@ -11,12 +11,13 @@
     <canvas id="headCanvas" width="400" height="400"></canvas>
 <div>
     <h1>Week 04 by PanNic</h1>
+    Jiangyun Pan
     <div>
         <h2>A. About the Program: Core</h2>
         <p>
-            Implemented <b>ImageArray</b> & <b>ImagePixel</b> class to manage pixels of ImageData<br>
-            Built-in conversion between raw imageData and self-implemented ImageArray<br>
-            Automatically calculate HSV value to enable manipulation of HSV instead of RGB<br>
+            Self-implemented <b>ImageArray</b> & <b>ImagePixel</b> class to manage pixels of ImageData<br>
+            Built-in conversion between raw <b>ImageData</b> and self-implemented <b>ImageArray</b><br>
+            Automatically calculate HSV value to enable manipulation of HSV together with RGB<br>
             Simply use <b>ImageArray.calculate()</b> function to calculate pixel values
         </p>
         <div>
@@ -53,8 +54,9 @@
             Initialized a filter object that processes image data with input width & height
         </p>
         <div>
-            <h4>Examples are listed below</h4>
-            <div class="line"></div>
+            <h4>Examples are listed below, Click Show Button to Show Examples</h4>
+            <p style="font-size: 10px; font-family: Calibri, serif">*The examples cannot be show at the same time due to memory allocation & limitation of JavaScript</p>
+            <div class="line-chapter"></div>
             <h3>Blur & Sharpen</h3>
             <div class="filter-block">
                 <h3>.averageFilter(size)</h3>
@@ -93,11 +95,17 @@
                 </p>
                 <canvas id="canvasSharpen" width="400" height="400"></canvas>
             </div>
-
         </div>
+
         <div>
-            <div class="line"></div>
+            <div class="line-chapter"></div>
             <h3>Edge Detection</h3>
+            <div class="filter-block">
+                <h3>.laplacian()</h3>
+<!--                <button id="showLaplacian">Show Average Filter Example</button>-->
+                <p></p>
+                <canvas id="canvasLaplacian" width="400" height="400"></canvas>
+            </div>
             <div class="filter-block">
                 <h3>.sobel()</h3>
                 <button id="showSobel">Show Average Filter Example</button>
@@ -116,17 +124,49 @@
                 <canvas id="canvasFeldman" width="400" height="400"></canvas>
             </div>
         </div>
+
+        <div>
+            <div class="line-chapter"></div>
+            <h3>Functions</h3>
+            <div>
+                <div class="line-function"></div>
+                <b>_applyKernelOperation(operation, mode)</b>
+            </div>
+            <div>
+                <div class="line-function"></div>
+                <b>_kernelOperation(operation, x, y)</b>
+            </div>
+            <div>
+                <div class="line-function"></div>
+                <b>_calculatePixelRGB(kernels, size, position, data, width)</b>
+            </div>
+            <div>
+                <div class="line-function"></div>
+                <b>_adjustValue(value)</b>
+            </div>
+            <div>
+                <div class="line-function"></div>
+                <b>_expand4Convolution(size)</b>
+            </div>
+            <div>
+                <div class="line-function"></div>
+                <b>_deleteEdges(array, size)</b>
+            </div>
+            <div>
+                <div class="line-function"></div>
+                <b>_operationBasic(kernel, size, _this)</b>
+            </div>
+            <div>
+                <div class="line-function"></div>
+                <b>_operationDifferentiate(kernel1, kernel2, _this)</b>
+            </div>
+            <div>
+                <div class="line-function"></div>
+                <b>_operationBilateral(sigma, size, _this)</b>
+            </div>
+        </div>
     </div>
 </div>
-
-
-
-
-
-
-
-
-
 <!--    <script type="module" src="utils.js"></script>-->
 </body>
 <script type="module" src="Week04A.js"></script>
@@ -136,6 +176,8 @@
     h4{
         margin: 0;
         padding: 0;
+        line-height: 0.1;
+        font-family: Calibri,serif;
     }
     .overlap {
         position: fixed;
@@ -143,10 +185,17 @@
     }
     button {
         padding: 10px;
-        border: black;
+        border: solid black;
+        background-color: cadetblue;
     }
-    .line {
+    .line-chapter {
         margin-top: 50px;
+        height: 2px;
+        width: 420px;
+        background-color: black;
+    }
+    .line-function {
+        margin-top: 15px;
         height: 2px;
         width: 400px;
         background-color: black;

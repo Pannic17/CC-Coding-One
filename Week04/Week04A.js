@@ -8,10 +8,15 @@ imageObj.src = "Test4.png";
 console.log( document.body.clientHeight );
 const fixCanvas = document.getElementById ('fixCanvas');
 const canvasHead = document.getElementById ('headCanvas');
+
+// Blur & Sharpen
 const canvasAverage = document.getElementById('canvasAverage');
 const canvasGaussian = document.getElementById('canvasGaussian');
 const canvasBilateral = document.getElementById('canvasBilateral');
 const canvasSharpen = document.getElementById('canvasSharpen');
+
+// Edge Detection
+const canvasLaplacian = document.getElementById('canvasLaplacian');
 const canvasSobel = document.getElementById('canvasSobel');
 const canvasScharr = document.getElementById('canvasScharr');
 const canvasFeldman = document.getElementById('canvasFeldman');
@@ -33,9 +38,9 @@ imageObj.onload = function () {
     console.log (original)
 
     let dataHead = source.calculate (function (data, width, height) {
-        return new Filter2D(data, width, height).sharpen(3, 1);
+        return new Filter2D(data, width, height).laplacian();
     })
-    addImage (canvasHead, source, dataHead);
+    addImage (canvasHead, dataHead);
     setTimeout(function () {
         dataHead = null
     }, 500)
@@ -69,9 +74,15 @@ imageObj.onload = function () {
     })
     addImage(canvasSharpen, dataSharpen);
 
+    const sourceLaplacian = new ImageArray(original.data, imageWidth, imageHeight);
+    let dataLaplacian = sourceLaplacian.calculate(function (data, width, height) {
+        return new Filter2D(data, width, height).laplacian();
+    })
+    addImage(canvasLaplacian, dataLaplacian);
+
     document.getElementById('showSobel').addEventListener('click', () => {
         canvasSobel.style.display = "block";
-        const sourceSobel = new ImageArray (original.data, imageWidth, imageHeight);
+        const sourceSobel = new ImageArray(original.data, imageWidth, imageHeight);
         let dataSobel = sourceSobel.calculate(function (data, width, height) {
             return new Filter2D(data, width, height).sobel();
         })
@@ -80,14 +91,14 @@ imageObj.onload = function () {
 
     document.getElementById('showScharr').addEventListener('click', () => {
         canvasScharr.style.display = "block";
-        const sourceScharr = new ImageArray (original.data, imageWidth, imageHeight);
+        const sourceScharr = new ImageArray(original.data, imageWidth, imageHeight);
         let dataScharr = sourceScharr.calculate(function (data, width, height) {
             return new Filter2D(data, width, height).scharr();
         })
         addImage(canvasScharr, dataScharr);
     })
 
-    const sourceFeldman = new ImageArray (original.data, imageWidth, imageHeight);
+    const sourceFeldman = new ImageArray(original.data, imageWidth, imageHeight);
     let dataFeldman = sourceFeldman.calculate(function (data, width, height) {
         return new Filter2D(data, width, height).feldman();
     })
@@ -333,7 +344,7 @@ class Filter2D {
     }
 
     canny(size) {
-
+        //TODO: TOO Complex
     }
 
     gaussian(size, sigma) {
