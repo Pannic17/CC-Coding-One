@@ -7,7 +7,10 @@
 </head>
 <body>
 <!--    <canvas id="canvas"></canvas>-->
-    <canvas id="fixCanvas" width="400" height="400" class="overlap"></canvas>
+    <div class="overlap">
+        <div><h3>Original Image</h3></div>
+        <canvas id="fixCanvas" width="400" height="400"></canvas>
+    </div>
     <canvas id="headCanvas" width="400" height="400"></canvas>
 <div>
     <h1>Week 04 by PanNic</h1>
@@ -46,7 +49,7 @@
         <h4>Built-in Filters</h4>
         <p>
             Blur & Sharpen: average filter, bilateral filter, gaussian filter, sharpen<br>
-            Morphological Transformation: adaptive thresholding, erosion, dilation<br>
+            Morphological Transformation: adaptive thresholding(average/gaussian), erosion, dilation<br>
             Edge Detection: sobel, sobel-feldman, scharr, laplacian, canny<br>
         </p>
         <h3>Filter2D(data, width, height)</h3>
@@ -182,6 +185,12 @@
     .overlap {
         position: fixed;
         left: 50%;
+        margin: 10px;
+        border: solid black;
+        border-radius: 10px;
+        padding: 10px;
+        background-color: cadetblue;
+        text-align: center;
     }
     button {
         padding: 10px;

@@ -38,7 +38,8 @@ imageObj.onload = function () {
     console.log (original)
 
     let dataHead = source.calculate (function (data, width, height) {
-        return new Filter2D(data, width, height).laplacian();
+        return  new Filter2D(data, width, height).erode(3, 13);
+        // return new Filter2D(array, width, height).gaussian(3, 1);
     })
     addImage (canvasHead, dataHead);
     setTimeout(function () {
@@ -55,7 +56,8 @@ imageObj.onload = function () {
         addImage(canvasAverage, dataAverage);
     })
 
-    let dataGaussian = source.calculate(function (data, width, height) {
+    const sourceGaussian = new ImageArray (original.data, imageWidth, imageHeight);
+    let dataGaussian = sourceGaussian.calculate(function (data, width, height) {
         return new Filter2D(data, width, height).gaussian(5, 2);
     })
     addImage(canvasGaussian, dataGaussian);
@@ -69,7 +71,8 @@ imageObj.onload = function () {
         addImage(canvasBilateral, dataBilateral);
     })
 
-    let dataSharpen = source.calculate(function (data, width, height) {
+    const sourceSharpen = new ImageArray (original.data, imageWidth, imageHeight);
+    let dataSharpen = sourceSharpen.calculate(function (data, width, height) {
         return new Filter2D(data, width, height).sharpen(3, 1);
     })
     addImage(canvasSharpen, dataSharpen);
@@ -218,8 +221,8 @@ class Filter2D {
 
     _operationBasic(kernel, size, _this) {
         let kernels = [kernel, kernel, kernel]
-        return function (x, y) {
-            let position = x * _this._width + y;
+        return function (p, q) {
+            let position = p * _this._width + q;
             return  _this._calculatePixelRGB(kernels, size, position, _this._data, _this._width);
         }
     }
@@ -227,8 +230,8 @@ class Filter2D {
     _operationDifferentiate(kernel1, kernel2, _this) {
         let kernels1 = [kernel1, kernel1, kernel1]
         let kernels2 = [kernel2, kernel2, kernel2]
-        return function (x, y) {
-            let position = x * _this._width + y;
+        return function (p, q) {
+            let position = p * _this._width + q;
             let pixelValue = []
             let result1 = _this._calculatePixelRGB(kernels1, 3, position, _this._data, _this._width);
             let result2 = _this._calculatePixelRGB(kernels2, 3, position, _this._data, _this._width);
@@ -240,7 +243,7 @@ class Filter2D {
         }
     }
 
-    _operationBilateral(sigma, size, _this) {
+    _operationAdaptive(_this, sigma, size, adaptive) {
         return function (p, q) {
             let kernel = []
             let sum = 0;
@@ -250,14 +253,7 @@ class Filter2D {
                 kernel.push([]);
                 for (let j = 0; j < size; j++) {
                     let y = j - mid;
-                    let posDX = Math.abs(x);
-                    let posDY = Math.abs(y);
-                    let distD = Math.exp(-(posDX*posDX+posDY*posDY)/(2*sigma*sigma))
-                    let greyD = Math.abs(
-                        (_this._data[(p+x)*_this._width+(q+y)]?.V() ?? 0)
-                        - (_this._data[p*_this._width+q]?.V() ?? 0)
-                    )
-                    let value = distD*Math.exp(-(greyD*greyD)/(2*sigma*sigma))
+                    let value = adaptive(sigma, x, y, p, q, _this._width, _this._data)
                     kernel[i].push(value);
                     sum += value;
                 }
@@ -269,17 +265,17 @@ class Filter2D {
             }
             let kernels = [kernel, kernel, kernel]
             let position = p * _this._width + q;
-            return  _this._calculatePixelRGB(kernels, size, position, _this._data, _this._width);
+            return _this._calculatePixelRGB(kernels, size, position, _this._data, _this._width);
         }
-    }
-
-
-    _operationBitwise(kernel1, kernel2, _this) {
-
     }
 
     _operationMultiChannel(kernelR, kernelG, kernelB, _this) {
 
+    }
+
+    grey() {
+        let array = new ImageArray([], this._width, this._height).fromRGBA(this._data, this._width, this._height)
+        return  array.convert2Grey().dataRGBA()
     }
 
     laplacian() {
@@ -306,8 +302,10 @@ class Filter2D {
     }
 
     scharr() {
-        let kernel1 = [[-47, 0, 47], [-162, 0, 162], [-47, 0, 47]]
-        let kernel2 = [[-47, -162, -47], [0, 0, 0], [47, 162, 47]]
+        let array = new ImageArray([], this._width, this._height).fromRGBA(this._data, this._width, this._height)
+        this._data = array.convert2Grey().dataRGBA()
+        let kernel1 = [[-3, 0, 3], [-10, 0, 10], [-3, 0, 3]]
+        let kernel2 = [[-3, -10, -3], [0, 0, 0], [3, 10, 3]]
         return this._applyKernelOperation(
             this._operationDifferentiate(kernel1, kernel2, this)
         )
@@ -349,6 +347,13 @@ class Filter2D {
 
     gaussian(size, sigma) {
         sigma = sigma ?? 1
+        let kernel = this._getGaussianKernel(size, sigma)
+        return this._applyKernelOperation(
+            this._operationBasic(kernel, size, this)
+        )
+    }
+
+    _getGaussianKernel(size, sigma) {
         let kernel = []
         let sum = 0;
         let mid = (size - 1) / 2
@@ -367,19 +372,26 @@ class Filter2D {
                 kernel[i][j] /= sum;
             }
         }
-        console.log(kernel);
-        return this._applyKernelOperation(
-            this._operationBasic(kernel, size, this)
-        )
+        return kernel
     }
 
     bilateral(size, sigma) {
         this._expand4Convolution(size)
         let array = this._applyKernelOperation(
-            this._operationBilateral(sigma, size, this)
+            this._operationAdaptive(this, sigma, size, this._adaptiveBilateral)
         )
-        array = this._deletedEdges(array, size)
-        return array;
+        return this._deletedEdges(array, size)
+    }
+
+    _adaptiveBilateral(sigma, x, y, p, q, width, data) {
+        let posDX = Math.abs(x);
+        let posDY = Math.abs(y);
+        let distD = Math.exp(-(posDX*posDX+posDY*posDY)/(2*sigma*sigma))
+        let greyD = Math.abs(
+            (data[(p+x)*width+(q+y)]?.V() ?? 0)
+            - (data[p*width+q]?.V() ?? 0)
+        )
+        return distD*Math.exp(-(greyD*greyD)/(2*sigma*sigma))
     }
 
     averageFilter(size) {
@@ -400,19 +412,100 @@ class Filter2D {
         //TODO: Median Filter requires a more complex implementation of algorithm
     }
 
-    dilate(image, size) {
-
+    dilate(size, threshold) {
+        this._data = this.adaptiveThresholdAverage(threshold)
+        return this._applyKernelOperation(
+            this._operationMorphological(this, size, false)
+        )
     }
 
-    erode(size) {
-
+    erode(size, threshold) {
+        this._data = this.adaptiveThresholdAverage(threshold)
+        return this._applyKernelOperation(
+            this._operationMorphological(this, size, true)
+        )
     }
 
-    adaptiveThreshold(size) {
-
+    _operationMorphological(_this, size, inv) {
+        inv = inv ?? false
+        return function (p, q) {
+            let value = [0, 0, 0, 255]
+            let channel = inv ? 255 : 0
+            let mid = (size - 1) / 2
+            for (let i = 0; i < size; i++) {
+                let x = i - mid;
+                for (let j = 0; j < size; j++) {
+                    let y = j - mid;
+                    if (_this._data[(p+x)*_this._width+(q+y)]?.V() >= 1 && inv == false) {
+                        channel = 255; break;
+                    } else if (_this._data[(p+x)*_this._width+(q+y)]?.V() <= 0 && inv == true) {
+                        channel = 0; break;
+                    }
+                }
+            }
+            value[0] = channel;
+            value[1] = channel;
+            value[2] = channel;
+            return value;
+        }
     }
 
-    directionalChromaticAbberation(size, direction) {
+    adaptiveThresholdAverage(size) {
+        this._data = this.gaussian(size, 1)
+        let array = new ImageArray([], this._width, this._height).fromRGBA(this._data, this._width, this._height)
+        this._data = array.convert2Grey().dataRGBA()
+        let average = 1 / size**2;
+        let kernel = []
+        for (let i = 0; i < size; i++) {
+            kernel.push([]);
+            for (let j = 0; j < size; j++) {
+                kernel[i].push(average);
+            }
+        }
+        return this._applyKernelOperation(
+            this._operationAdaptiveThreshold(this, size, kernel)
+        )
+    }
+
+    adaptiveThresholdGaussian(size, sigma) {
+        sigma = sigma ?? 1
+        let array = new ImageArray([], this._width, this._height).fromRGBA(this._data, this._width, this._height)
+        this._data = array.convert2Grey().dataRGBA()
+        let kernel = this._getGaussianKernel(size, sigma);
+        return this._applyKernelOperation(
+            this._operationAdaptiveThreshold(this, size, kernel)
+        )
+    }
+
+    _bitewiseThreshold(position, data, threshold) {
+        let value = [0, 0, 0, 255]
+        let over = (data[position]?.V() ?? 1) >= threshold ?? 0;
+        value[0] = over ? 255 : 0
+        value[1] = over ? 255 : 0
+        value[2] = over ? 255 : 0
+        // console.log(value)
+        return value;
+    }
+
+    _operationAdaptiveThreshold(_this, size, kernel) {
+        return function (p, q) {
+            let threshold = 0;
+            let mid = (size - 1) / 2
+            for (let i = 0; i < size; i++) {
+                let x = i - mid;
+                kernel.push([]);
+                for (let j = 0; j < size; j++) {
+                    let y = j - mid;
+                    threshold += _this._data[(p+x)*_this._width+(q+y)]?.V() * kernel[i][j]
+                }
+            }
+            // console.log(threshold)
+            let position = p * _this._width + q;
+            return _this._bitewiseThreshold(position, _this._data, threshold);
+        }
+    }
+
+    chromaticAbberation(size, direction) {
         let kernelR = [];
         let kernelG = [];
         let kernelB = [];
@@ -434,13 +527,13 @@ class ImageArray {
         // console.log(this._data)
     }
 
-    fromRGBA(rgbaData, width, height) {
+    fromRGBA(pixelData, width, height) {
         let array = [];
-        for (let i = 0; i < rgbaData.length; i++) {
-            array.push(rgbaData[i].R())
-            array.push(rgbaData[i].G())
-            array.push(rgbaData[i].B())
-            array.push(rgbaData[i].A())
+        for (let i = 0; i < pixelData.length; i++) {
+            array.push(pixelData[i].R())
+            array.push(pixelData[i].G())
+            array.push(pixelData[i].B())
+            array.push(pixelData[i].A())
         }
         return new ImageArray(array, width, height);
     }
@@ -470,17 +563,19 @@ class ImageArray {
      */
     calculate(operation) {
         let array = operation(this._data, this._width, this._height);
-        // for (let i = 0; i < this._height; i++) {
-        //     for (let j = 0; j < this._width; j++) {
-        //         array.push(operation(this._data, i, j, this._width));
-        //     }
-        // }
-        // console.log(array);
         return this.fromRGBA(array, this._width, this._height);
     }
 
     convert2Grey() {
-
+        let array = [];
+        for (let i = 0; i < this._height; i++) {
+            for (let j = 0; j < this._width; j++) {
+                let pixel = this._data[i*this._width+j]
+                let grey = pixel.R()*0.299 + pixel.G()*0.587 + pixel.B()*0.114
+                array.push(new ImagePixel([grey, grey, grey, 255], 'RGB'));
+            }
+        }
+        return this.fromRGBA(array, this._width, this._height);
     }
 }
 
