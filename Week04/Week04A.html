@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Coding One Week 04</title>
+<!--    <link rel="stylesheet" href="Week04A.css">-->
+</head>
+<body>
+<!--    <canvas id="canvas"></canvas>-->
+    <div class="overlap">
+        <div><h3>Original Image</h3></div>
+        <canvas id="fixCanvas" width="400" height="400"></canvas>
+    </div>
+    <canvas id="headCanvas" width="400" height="400"></canvas>
+<div>
+    Chromatic Aberration&emsp;&emsp;&emsp;Jiangyun Pan
+    <h1>Week 04 by PanNic</h1>
+    <a href="https://github.com/Pannic17/CC-Coding-One/tree/master/Week04">Link to GitHub Repository</a>
+    <a href="https://github.com/Pannic17/CC-Coding-One/tree/master/Week04"><img style="width: 15px; height: 15px" src="../utils/icon_github.png" alt="Github"/></a>
+    <div>
+        <h2>A. About the Program: Core</h2>
+        <p>
+            Self-implemented <b>ImageArray</b> & <b>ImagePixel</b> class to manage pixels of ImageData<br>
+            Built-in conversion between raw <b>ImageData</b> and self-implemented <b>ImageArray</b><br>
+            Automatically calculate HSV value to enable manipulation of HSV together with RGB<br>
+            Simply use <b>ImageArray.calculate()</b> function to calculate pixel values
+        </p>
+        <div>
+            <h3>ImageArray.calculate(function)</h3>
+            <p>
+                ImageArray.calculate(function(array, width, height) {<br>
+                &emsp;return Array&lt;ImagePixel&gt;<br>
+                })<br>
+                input a function that re-calculate every pixel according to the input function operation
+                and return a new ImageArray<br>
+            </p>
+        </div>
+        <div>
+            <h4>Parameters</h4>
+            <p>
+                <b>array</b>: the reformat ImageArray of original image<br>
+                <b>width</b>: the width of original image<br>
+                <b>height</b>: the height of original image<br>
+                new <b>ImagePixel</b>: new pixel value after calculation<br>
+            </p>
+        </div>
+    </div>
+    <div>
+        <h2>B. Kernels and Filters</h2>
+        <p>Implemented <b>Filter2D</b> class that contains lots of built-in filters based on convolutional kernel<br></p>
+        <h3>Built-in Filters</h3>
+        <p>
+            Blur & Sharpen: average filter, bilateral filter, gaussian filter, sharpen<br>
+            Morphological Transformation: adaptive thresholding(average/gaussian), erosion, dilation<br>
+            Edge Detection: sobel, sobel-feldman, scharr, laplacian, <del>canny</del><br>
+            Color Correction: chromatic aberration<br>
+        </p>
+        <h3>Filter2D(data, width, height)</h3>
+        <p>
+            Initialized a filter object that processes image data with input width & height
+        </p>
+        <div>
+            <h4>Examples are listed below, click Show button to show examples</h4>
+            <p style="font-size: 10px; font-family: Calibri, serif">*The examples cannot be show at the same time due to memory allocation & limitation of JavaScript</p>
+            <div class="line-chapter"></div>
+            <h3>Blur & Sharpen</h3>
+            <div class="filter-block">
+                <h3>.averageFilter(size)</h3>
+                <button id="showAverage">Show Average Filter Example</button>
+                <p>Value of generated kernel matrix is evenly distributed according to size</p>
+                <p>
+                    <b>size</b>: size of the kernel, must be even number<br>
+                </p>
+                <canvas id="canvasAverage" width="400" height="400"></canvas>
+            </div>
+            <div class="filter-block">
+                <h3>.gaussian(size, sigma)</h3>
+                <p></p>
+                <p>
+                    <b>size</b>: size of the kernel, must be even number<br>
+                    <b>sigma</b>: sigma value of gaussian function, the higher, the more blur<br>
+                </p>
+                <canvas id="canvasGaussian" width="400" height="400"></canvas>
+            </div>
+            <div class="filter-block">
+                <h3>.bilateral(size, sigma)</h3>
+                <button id="showBilateral">Show Bilateral Filter Example</button>
+                <p></p>
+                <p>
+                    <b>size</b>: size of the kernel, must be even number<br>
+                    <b>sigma</b>: sigma value of gaussian function, the higher, the more blur<br>
+                </p>
+                <canvas id="canvasBilateral" width="400" height="400"></canvas>
+            </div>
+            <div class="filter-block">
+                <h3>.sharpen(size, amount)</h3>
+                <p></p>
+                <p>
+                    <b>size</b>: size of the kernel, must be even number<br>
+                    <b>amount</b>: sharpen level, range 0 to 1<br>
+                </p>
+                <canvas id="canvasSharpen" width="400" height="400"></canvas>
+            </div>
+        </div>
+
+        <div>
+            <div class="line-chapter"></div>
+            <h3>Edge Detection</h3>
+            <div class="filter-block">
+                <h3>.laplacian()</h3>
+<!--                <button id="showLaplacian">Show Average Filter Example</button>-->
+                <p></p>
+                <canvas id="canvasLaplacian" width="400" height="400"></canvas>
+            </div>
+            <div class="filter-block">
+                <h3>.sobel()</h3>
+                <button id="showSobel">Show Average Filter Example</button>
+                <p></p>
+                <canvas id="canvasSobel" width="400" height="400"></canvas>
+            </div>
+            <div class="filter-block">
+                <h3>.scharr()</h3>
+                <button id="showScharr">Show Average Filter Example</button>
+                <p></p>
+                <canvas id="canvasScharr" width="400" height="400"></canvas>
+            </div>
+            <div class="filter-block">
+                <h3>.feldman()</h3>
+                <p></p>
+                <canvas id="canvasFeldman" width="400" height="400"></canvas>
+            </div>
+        </div>
+
+        <div>
+            <div class="line-chapter"></div>
+            <h3>Functions</h3>
+            <div>
+                <div class="line-function"></div>
+                <b>_applyKernelOperation(operation, mode)</b>
+            </div>
+            <div>
+                <div class="line-function"></div>
+                <b>_kernelOperation(operation, x, y)</b>
+            </div>
+            <div>
+                <div class="line-function"></div>
+                <b>_calculatePixelRGB(kernels, size, position, data, width)</b>
+            </div>
+            <div>
+                <div class="line-function"></div>
+                <b>_adjustValue(value)</b>
+            </div>
+            <div>
+                <div class="line-function"></div>
+                <b>_expand4Convolution(size)</b>
+            </div>
+            <div>
+                <div class="line-function"></div>
+                <b>_deleteEdges(array, size)</b>
+            </div>
+            <div>
+                <div class="line-function"></div>
+                <b>_operationBasic(kernel, size, _this)</b>
+            </div>
+            <div>
+                <div class="line-function"></div>
+                <b>_operationDifferentiate(kernel1, kernel2, _this)</b>
+            </div>
+            <div>
+                <div class="line-function"></div>
+                <b>_operationBilateral(sigma, size, _this)</b>
+            </div>
+        </div>
+    </div>
+</div>
+<!--    <script type="module" src="utils.js"></script>-->
+</body>
+<script type="module" src="Week04A.js"></script>
+</html>
+
+<style>
+    h4{
+        margin: 0;
+        padding: 0;
+        line-height: 0.1;
+        font-family: Calibri,serif;
+    }
+    .overlap {
+        position: fixed;
+        left: 50%;
+        margin: 10px;
+        border: solid black;
+        border-radius: 10px;
+        padding: 10px;
+        background-color: cadetblue;
+        text-align: center;
+    }
+    button {
+        padding: 10px;
+        border: solid black;
+        background-color: cadetblue;
+    }
+    .line-chapter {
+        margin-top: 50px;
+        height: 2px;
+        width: 420px;
+        background-color: black;
+    }
+    .line-function {
+        margin-top: 15px;
+        height: 2px;
+        width: 400px;
+        background-color: black;
+    }
+    .filter-block{
+        padding-left: 15px;
+        padding-bottom: 10px;
+        margin: 10px;
+        border: solid black;
+        border-radius: 10px;
+    }
+</style>
