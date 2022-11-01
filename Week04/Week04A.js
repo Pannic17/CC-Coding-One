@@ -37,8 +37,9 @@ imageObj.onload = function () {
     const source = new ImageArray (original.data, imageWidth, imageHeight);
     console.log (original)
 
+    let threshold = 13
     let dataHead = source.calculate (function (data, width, height) {
-        return  new Filter2D(data, width, height).erode(3, 13);
+        return new Filter2D(data, width, height).chromaticAberration(3, threshold);
         // return new Filter2D(array, width, height).gaussian(3, 1);
     })
     addImage (canvasHead, dataHead);
@@ -269,8 +270,12 @@ class Filter2D {
         }
     }
 
-    _operationMultiChannel(kernelR, kernelG, kernelB, _this) {
-
+    _operationMultiChannel(kernelR, kernelG, kernelB, _this, size) {
+        let kernels = [kernelR, kernelG, kernelB];
+        return function (p, q) {
+            let position = p * _this._width + q;
+            return  _this._calculatePixelRGB(kernels, size, position, _this._data, _this._width);
+        }
     }
 
     grey() {
@@ -505,10 +510,31 @@ class Filter2D {
         }
     }
 
-    chromaticAbberation(size, direction) {
-        let kernelR = [];
-        let kernelG = [];
-        let kernelB = [];
+    chromaticAberration(offset) {
+        let size = offset * 2 + 1;
+        let kernelR = []
+        let kernelG = []
+        let kernelB = []
+        for (let i = 0; i < size; i++) {
+            kernelR.push([]);
+            kernelG.push([]);
+            kernelB.push([]);
+            for (let j = 0; j < size; j++) {
+                kernelR[i].push(0);
+                kernelG[i].push(0);
+                kernelB[i].push(0);
+            }
+        }
+        let short = Math.floor(offset/2)
+        kernelR[0][0] = 1;
+        kernelG[offset*2][short] = 1;
+        kernelB[short][offset*2] = 1;
+        console.log(kernelR)
+        console.log(kernelG)
+        console.log(kernelB)
+        return this._applyKernelOperation(
+            this._operationMultiChannel(kernelR, kernelG, kernelB, this, size)
+        )
     }
 }
 
