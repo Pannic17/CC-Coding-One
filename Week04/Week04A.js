@@ -9,6 +9,9 @@ console.log( document.body.clientHeight );
 const fixCanvas = document.getElementById ('fixCanvas');
 const canvasHead = document.getElementById ('headCanvas');
 
+// Filter2D
+const canvasGrey = document.getElementById('canvasGrey');
+
 // Blur & Sharpen
 const canvasAverage = document.getElementById('canvasAverage');
 const canvasGaussian = document.getElementById('canvasGaussian');
@@ -21,11 +24,26 @@ const canvasSobel = document.getElementById('canvasSobel');
 const canvasScharr = document.getElementById('canvasScharr');
 const canvasFeldman = document.getElementById('canvasFeldman');
 
+// Morphological Transformation
+const canvasAverageThreshold = document.getElementById('canvasAverageThreshold');
+const canvasGaussianThreshold = document.getElementById('canvasGaussianThreshold');
+const canvasDilate = document.getElementById('canvasDilate');
+const canvasErode = document.getElementById('canvasErode');
+
+// Color Correction
+const canvasChromaticAberration = document.getElementById('canvasChromaticAberration');
+
+canvasGrey.style.display = 'none';
 
 canvasAverage.style.display = 'none';
 canvasBilateral.style.display = "none";
 canvasSobel.style.display = 'none';
 canvasScharr.style.display = 'none';
+canvasAverageThreshold.style.display = 'none';
+canvasGaussianThreshold.style.display = 'none';
+canvasDilate.style.display = 'none';
+canvasErode.style.display = 'none';
+// canvasChromaticAberration.style.display = 'none';
 
 imageObj.onload = function () {
     const fixContext = fixCanvas.getContext ('2d');
@@ -43,14 +61,23 @@ imageObj.onload = function () {
         // return new Filter2D(array, width, height).gaussian(3, 1);
     })
     addImage (canvasHead, dataHead);
-    setTimeout(function () {
-        dataHead = null
-    }, 500)
 
 
+    //Filter2D Example
+    document.getElementById('showGrey').addEventListener('click', () => {
+        canvasGrey.style.display = 'block';
+        const sourceGrey = new ImageArray(original.data, imageWidth, imageHeight);
+        let dataGrey = sourceGrey.calculate(function (data, width, height) {
+            return new Filter2D(data, width, height).grey();
+        })
+        addImage(canvasGrey, dataGrey);
+    })
+
+
+    // Blur & Sharpen Example
     document.getElementById('showAverage').addEventListener('click', () => {
         canvasAverage.style.display = 'block';
-        const sourceAverage = new ImageArray (original.data, imageWidth, imageHeight);
+        const sourceAverage = new ImageArray(original.data, imageWidth, imageHeight);
         let dataAverage = sourceAverage.calculate(function (data, width, height) {
             return new Filter2D(data, width, height).averageFilter(7);
         })
@@ -78,6 +105,8 @@ imageObj.onload = function () {
     })
     addImage(canvasSharpen, dataSharpen);
 
+
+    // Edge Detection
     const sourceLaplacian = new ImageArray(original.data, imageWidth, imageHeight);
     let dataLaplacian = sourceLaplacian.calculate(function (data, width, height) {
         return new Filter2D(data, width, height).laplacian();
@@ -107,6 +136,50 @@ imageObj.onload = function () {
         return new Filter2D(data, width, height).feldman();
     })
     addImage(canvasFeldman, dataFeldman);
+
+
+    // Morphological Transformation
+    document.getElementById('showAverageThreshold').addEventListener('click', () => {
+        canvasAverageThreshold.style.display = "block";
+        const sourceAverageThreshold = new ImageArray(original.data, imageWidth, imageHeight);
+        let dataAverageThreshold = sourceAverageThreshold.calculate(function (data, width, height) {
+            return new Filter2D(data, width, height).adaptiveThresholdAverage(7);
+        })
+        addImage(canvasAverageThreshold, dataAverageThreshold);
+    })
+
+    document.getElementById('showGaussianThreshold').addEventListener('click', () => {
+        canvasGaussianThreshold.style.display = "block";
+        const sourceGaussianThreshold = new ImageArray(original.data, imageWidth, imageHeight);
+        let dataGaussianThreshold = sourceGaussianThreshold.calculate(function (data, width, height) {
+            return new Filter2D(data, width, height).adaptiveThresholdGaussian(7, 1);
+        })
+        addImage(canvasGaussianThreshold, dataGaussianThreshold);
+    })
+
+    document.getElementById('showDilate').addEventListener('click', () => {
+        canvasDilate.style.display = "block";
+        const sourceDilate = new ImageArray(original.data, imageWidth, imageHeight);
+        let dataDilate = sourceDilate.calculate(function (data, width, height) {
+            return new Filter2D(data, width, height).dilate(3, 7);
+        })
+        addImage(canvasDilate, dataDilate);
+    })
+
+    document.getElementById('showErode').addEventListener('click', () => {
+        canvasErode.style.display = "block";
+        const sourceErode = new ImageArray(original.data, imageWidth, imageHeight);
+        let dataErode = sourceErode.calculate(function (data, width, height) {
+            return new Filter2D(data, width, height).erode(3, 7);
+        })
+        addImage(canvasErode, dataErode);
+    })
+
+    const sourceChromaticAberration = new ImageArray(original.data, imageWidth, imageHeight);
+    let dataChromaticAberration = sourceChromaticAberration.calculate(function (data, width, height) {
+        return new Filter2D(data, width, height).chromaticAberration(3);
+    })
+    addImage(canvasChromaticAberration, dataChromaticAberration);
 
 
     function addImage (canvas, data) {
@@ -307,8 +380,8 @@ class Filter2D {
     }
 
     scharr() {
-        let array = new ImageArray([], this._width, this._height).fromRGBA(this._data, this._width, this._height)
-        this._data = array.convert2Grey().dataRGBA()
+        // let array = new ImageArray([], this._width, this._height).fromRGBA(this._data, this._width, this._height)
+        this._data = this.grey();
         let kernel1 = [[-3, 0, 3], [-10, 0, 10], [-3, 0, 3]]
         let kernel2 = [[-3, -10, -3], [0, 0, 0], [3, 10, 3]]
         return this._applyKernelOperation(
@@ -457,8 +530,8 @@ class Filter2D {
 
     adaptiveThresholdAverage(size) {
         this._data = this.gaussian(size, 1)
-        let array = new ImageArray([], this._width, this._height).fromRGBA(this._data, this._width, this._height)
-        this._data = array.convert2Grey().dataRGBA()
+        // let array = new ImageArray([], this._width, this._height).fromRGBA(this._data, this._width, this._height)
+        this._data = this.grey();
         let average = 1 / size**2;
         let kernel = []
         for (let i = 0; i < size; i++) {
@@ -474,8 +547,8 @@ class Filter2D {
 
     adaptiveThresholdGaussian(size, sigma) {
         sigma = sigma ?? 1
-        let array = new ImageArray([], this._width, this._height).fromRGBA(this._data, this._width, this._height)
-        this._data = array.convert2Grey().dataRGBA()
+        // let array = new ImageArray([], this._width, this._height).fromRGBA(this._data, this._width, this._height)
+        this._data = this.grey();
         let kernel = this._getGaussianKernel(size, sigma);
         return this._applyKernelOperation(
             this._operationAdaptiveThreshold(this, size, kernel)

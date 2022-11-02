@@ -12,6 +12,7 @@
         <canvas id="fixCanvas" width="400" height="400"></canvas>
     </div>
     <canvas id="headCanvas" width="400" height="400"></canvas>
+    <canvas id="motionCanvas" width="400" height="400"></canvas>
 <div>
     Chromatic Aberration&emsp;&emsp;&emsp;Jiangyun Pan
     <h1>Week 04 by PanNic</h1>
@@ -59,6 +60,12 @@
         <p>
             Initialized a filter object that processes image data with input width & height
         </p>
+        <div class="filter-block">
+            <h3>.grey()</h3>
+            <button id="showGrey">Show Grey-Scale Example</button>
+            <canvas id="canvasGrey" width="400" height="400"></canvas>
+            <p>convert the input image to grey-scale image</p>
+        </div>
         <div>
             <h4>Examples are listed below, click Show button to show examples</h4>
             <p style="font-size: 10px; font-family: Calibri, serif">*The examples cannot be show at the same time due to memory allocation & limitation of JavaScript</p>
@@ -67,39 +74,43 @@
             <div class="filter-block">
                 <h3>.averageFilter(size)</h3>
                 <button id="showAverage">Show Average Filter Example</button>
-                <p>Value of generated kernel matrix is evenly distributed according to size</p>
+                <canvas id="canvasAverage" width="400" height="400"></canvas>
+                <p>Value of generated kernel matrix is evenly distributed according to size.</p>
                 <p>
                     <b>size</b>: size of the kernel, must be even number<br>
                 </p>
-                <canvas id="canvasAverage" width="400" height="400"></canvas>
             </div>
             <div class="filter-block">
                 <h3>.gaussian(size, sigma)</h3>
-                <p></p>
+                <canvas id="canvasGaussian" width="400" height="400"></canvas>
+                <p>Perform a Gaussian blur effect that values in the kernel follow normal distribution.</p>
                 <p>
                     <b>size</b>: size of the kernel, must be even number<br>
-                    <b>sigma</b>: sigma value of gaussian function, the higher, the more blur<br>
+                    <b>sigma</b>: sigma value of normal distribution, the higher, the more blur<br>
                 </p>
-                <canvas id="canvasGaussian" width="400" height="400"></canvas>
             </div>
             <div class="filter-block">
                 <h3>.bilateral(size, sigma)</h3>
                 <button id="showBilateral">Show Bilateral Filter Example</button>
-                <p></p>
+                <canvas id="canvasBilateral" width="400" height="400"></canvas>
+                <p>
+                    Bilateral filter smooths the image by both Gaussian and Grey-Scale gradient
+                    thus blurs the images and keeps information at the same time.<br>
+                    The kernel of bilateral filter is calculated dynamically to adapt to the different grey-scale gradient of each pixel.
+                </p>
                 <p>
                     <b>size</b>: size of the kernel, must be even number<br>
-                    <b>sigma</b>: sigma value of gaussian function, the higher, the more blur<br>
+                    <b>sigma</b>: sigma value of normal distribution, the higher, the more blur<br>
                 </p>
-                <canvas id="canvasBilateral" width="400" height="400"></canvas>
             </div>
             <div class="filter-block">
                 <h3>.sharpen(size, amount)</h3>
-                <p></p>
+                <canvas id="canvasSharpen" width="400" height="400"></canvas>
+                <p>Sharpen effect uses an inverted laplacian operator to stress the edges of the image.</p>
                 <p>
                     <b>size</b>: size of the kernel, must be even number<br>
                     <b>amount</b>: sharpen level, range 0 to 1<br>
                 </p>
-                <canvas id="canvasSharpen" width="400" height="400"></canvas>
             </div>
         </div>
 
@@ -109,25 +120,118 @@
             <div class="filter-block">
                 <h3>.laplacian()</h3>
 <!--                <button id="showLaplacian">Show Average Filter Example</button>-->
-                <p></p>
                 <canvas id="canvasLaplacian" width="400" height="400"></canvas>
+                <p>
+                    Laplacian operator uses an eclipse or cross kernel rather than square one,
+                    thus focus on the edges of the image. <br>
+                    The built-in laplacian operator kernel size is 3.
+                </p>
             </div>
             <div class="filter-block">
                 <h3>.sobel()</h3>
-                <button id="showSobel">Show Average Filter Example</button>
-                <p></p>
+                <button id="showSobel">Show Sobel Operator Example</button>
                 <canvas id="canvasSobel" width="400" height="400"></canvas>
+                <p>
+                    Sobel operator is an edge detection algorithm.<br>
+                    Sobel algorithm computes the gradient from both vertical & horizontal
+                    and then calculate the differentiated distance of the gradient. Thus performs the edge detection.<br>
+                    Reference&emsp; <a href="https://en.wikipedia.org/wiki/Sobel_operator">https://en.wikipedia.org/wiki/Sobel_operator</a><br>
+                    The built-in sobel operator kernel size is 3.
+                </p>
             </div>
             <div class="filter-block">
                 <h3>.scharr()</h3>
-                <button id="showScharr">Show Average Filter Example</button>
-                <p></p>
+                <button id="showScharr">Show Scharr Operator Example</button>
                 <canvas id="canvasScharr" width="400" height="400"></canvas>
+                <p>
+                    Scharr operator is a utilized sobel operator
+                    that increases the adjust-weight when calculating differentiate distances and uses grey-scale image as input.<br>
+                    Reference&emsp; <a href="https://docs.opencv.org/4.x/d5/d0f/tutorial_py_gradients.html">https://docs.opencv.org/4.x/d5/d0f/tutorial_py_gradients.html</a><br>
+                    The built-in scharr operator kernel size is 3.
+                </p>
             </div>
             <div class="filter-block">
                 <h3>.feldman()</h3>
-                <p></p>
                 <canvas id="canvasFeldman" width="400" height="400"></canvas>
+                <p>
+                    Sobel-Feldman operator is a utilized sobel operator that use an adjusted weight.<br>
+                    The built-in sobel-feldman operator kernel size is 3.
+                </p>
+            </div>
+        </div>
+
+        <div>
+            <div class="line-chapter"></div>
+            <h3>Morphological Transformation</h3>
+            <div class="filter-block">
+                <h3>.adaptiveThresholdAverage(size)</h3>
+                <button id="showAverageThreshold">Show Adaptive Average Threshold Example</button>
+                <canvas id="canvasAverageThreshold" width="400" height="400"></canvas>
+                <p>
+                    <b>Image Binarization</b> is the process that convert image to black white image for further processing<br>
+                    For pixels with grey-scale value that is over the threshold, the pixel will be truncate to white, otherwise to black<br>
+                    Reference&emsp; <a href="https://docs.opencv.org/4.x/d7/d4d/tutorial_py_thresholding.html">https://docs.opencv.org/4.x/d7/d4d/tutorial_py_thresholding.html</a><br>
+                    Adaptive Average Threshold dynamically calculate the threshold value of each pixel, The threshold will be the mean of all pixels inside the kernel.<br>
+                </p>
+                <p>
+                    <b>size</b>: size of the kernel, must be even number, the larger, the less information are kept<br>
+                </p>
+            </div>
+            <div class="filter-block">
+                <h3>.adaptiveThresholdGaussian(size, sigma)</h3>
+                <button id="showGaussianThreshold">Show Adaptive Gaussian Threshold Example</button>
+                <canvas id="canvasGaussianThreshold" width="400" height="400"></canvas>
+                <p>
+                    Adaptive Gaussian Threshold dynamically calculate the threshold value of each pixel, The threshold will be the weighted gaussian of all pixels inside the kernel.<br>
+                </p>
+                <p>
+                    <b>size</b>: size of the kernel, must be even number, the larger, the less information are kept<br>
+                    <b>sigma</b>: sigma value of normal distribution, the lower, the more concentrate<br>
+                </p>
+            </div>
+            <div class="filter-block">
+                <h3>.dilate(size, threshold)</h3>
+                <button id="showDilate">Show Dilate Example</button>
+                <canvas id="canvasDilate" width="400" height="400"></canvas>
+                <p>
+                    Dilate effect will extend the white border of a binary image<br>
+                    When processing Dilate effect, an Adaptive Average Threshold filter will apply to convert the original image to binary<br>
+                </p>
+                <p>
+                    <b>size</b>: size of the kernel, must be even number, the larger, the more pixels expanded<br>
+                    <b>threshold</b>: the threshold size of adaptive average threshold<br>
+                </p>
+            </div>
+            <div class="filter-block">
+                <h3>.erode(size, threshold)</h3>
+                <button id="showErode">Show Erode Example</button>
+                <canvas id="canvasErode" width="400" height="400"></canvas>
+                <p>
+                    Erode effect will shrink the white border of a binary image<br>
+                    When processing Dilate effect, an Adaptive Average Threshold filter will apply to convert the original image to binary<br>
+                </p>
+                <p>
+                    <b>size</b>: size of the kernel, must be even number, the larger, the more pixels shrink<br>
+                    <b>threshold</b>: the threshold size of adaptive average threshold<br>
+                </p>
+            </div>
+        </div>
+
+        <div>
+            <div class="line-chapter"></div>
+            <h3>Color Correction</h3>
+            <div class="filter-block">
+                <h3>.chromaticAberration(offset)</h3>
+<!--                <button id="showChromaticAberration">Show Chromatic Aberration Example</button>-->
+                <canvas id="canvasChromaticAberration" width="400" height="400"></canvas>
+                <p>
+                    Chromatic Aberration is also called spherochromatism. It is the seperation of different channels of RGB values<br>
+                    Reference&emsp; <a href="https://en.wikipedia.org/wiki/Chromatic_aberration">https://en.wikipedia.org/wiki/Chromatic_aberration</a><br>
+                    This implementation of chromatic aberration fix the angle at approximately 60 degrees with fixed channel direction<br>
+                </p>
+                <p>
+                    <b>offset</b>: the offset of channels to origin, the larger, the more obvious<br>
+                </p>
             </div>
         </div>
 
@@ -197,6 +301,7 @@
     }
     button {
         padding: 10px;
+        width: 400px;
         border: solid black;
         background-color: cadetblue;
     }
