@@ -58,7 +58,7 @@ imageObj.onload = function () {
     const motionContext = motionCanvas.getContext('2d');
     const effect = new Effect(imageWidth, imageHeight);
 
-    const myContext = myCanvas.getContext('2d');
+    // const myContext = myCanvas.getContext('2d');
 
     fixContext.drawImage (imageObj, 0, 0);
     const original = fixContext.getImageData(0, 0, imageWidth, imageHeight);
