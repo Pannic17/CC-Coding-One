@@ -53,11 +53,6 @@ motionCanvas.style.display = 'none';
 
 let play = false;
 
-var handlePlay  = function () {
-    play = !play;
-    return play;
-}
-
 imageObj.onload = function () {
     const fixContext = fixCanvas.getContext ('2d');
     const imageWidth = imageObj.width;
@@ -111,12 +106,21 @@ imageObj.onload = function () {
         motionContext.fillRect(0, 0, imageWidth, imageHeight);
         motionContext.font = effect.fontSize + 'px monospace';
         let overlapRaw = motionCanvas.getContext('2d').getImageData(0, 0, imageWidth, imageHeight);
-        let overlap = new ImageArray(overlapRaw.data, imageWidth, imageHeight);
-        let array = new ImageArray([], imageWidth, imageHeight).fromArray(calculate(processed, overlap), imageWidth, imageHeight);
-        addImage(myCanvas, array);
-        effect.symbols.forEach(symbol => symbol.draw(motionContext));
-        requestAnimationFrame(animate);
+        if (play) {
+            let overlap = new ImageArray(overlapRaw.data, imageWidth, imageHeight);
+            let array = new ImageArray([], imageWidth, imageHeight).fromArray(calculate(processed, overlap), imageWidth, imageHeight);
+            addImage(myCanvas, array);
+            effect.symbols.forEach(symbol => symbol.draw(motionContext));
+            requestAnimationFrame(animate);
+        }
     }
+
+    document.getElementById('animate').addEventListener('click', () => {
+        play = !play;
+        if (play) {
+            animate();
+        }
+    })
 
     animate();
 }
