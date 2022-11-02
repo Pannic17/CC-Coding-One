@@ -6,8 +6,13 @@ const imageObj = new Image ();
 imageObj.src = "Test4.png";
 //imageObj.src = "pic2.jpg";
 console.log( document.body.clientHeight );
+const myCanvas = document.getElementById('myCanvas');
 const fixCanvas = document.getElementById ('fixCanvas');
-const canvasHead = document.getElementById ('headCanvas');
+const headCanvas = document.getElementById ('headCanvas');
+
+// Character Rain
+const motionCanvas = document.getElementById('motionCanvas');
+
 
 // Filter2D
 const canvasGrey = document.getElementById('canvasGrey');
@@ -50,19 +55,104 @@ imageObj.onload = function () {
     const imageWidth = imageObj.width;
     const imageHeight = imageObj.height;
 
+    const motionContext = motionCanvas.getContext('2d');
+    const effect = new Effect(imageWidth, imageHeight);
+
+    const myContext = myCanvas.getContext('2d');
+
     fixContext.drawImage (imageObj, 0, 0);
     const original = fixContext.getImageData(0, 0, imageWidth, imageHeight);
-    const source = new ImageArray (original.data, imageWidth, imageHeight);
-    console.log (original)
+    const source = new ImageArray(original.data, imageWidth, imageHeight);
+    console.log(source)
+    console.log(original)
 
-    let threshold = 13
+    let threshold = 25
     let dataHead = source.calculate (function (data, width, height) {
-        return new Filter2D(data, width, height).chromaticAberration(3, threshold);
+        let array = new Filter2D(data, width, height).erode(1, threshold);
+        array = new Filter2D(array, width, height).gaussian(3);
+        return array;
         // return new Filter2D(array, width, height).gaussian(3, 1);
     })
-    addImage (canvasHead, dataHead);
+    addImage (headCanvas, dataHead);
+
+    let processedRaw = headCanvas.getContext('2d').getImageData(0, 0, imageWidth, imageHeight);
+    let processed = new ImageArray(processedRaw.data, imageWidth, imageHeight);
+    // let dataPlay =
+
+    loadCanvas(original, source, imageWidth, imageHeight);
 
 
+    function calculate(bg, ol) {
+        // console.log(ol._data[13412].G());
+        let array = []
+        for (let i = 0; i < imageHeight; i++){
+            for (let j = 0; j < imageWidth; j++) {
+                // console.log(bg._data[0])
+                let R = bg._data[i*imageWidth+j].V() * ol._data[i*imageWidth+j].R();
+                let G = bg._data[i*imageWidth+j].V() * ol._data[i*imageWidth+j].G();
+                let B = bg._data[i*imageWidth+j].V() * ol._data[i*imageWidth+j].B();
+                // console.log(ol._data[i*imageWidth+j].G());
+                array.push(new ImagePixel([R, G, B, 255], 'RGB'))
+            }
+        }
+        return array
+    }
+
+    function animate() {
+        motionContext.fillStyle = 'rgba(0,0,0,0.05)';
+        motionContext.fillRect(0, 0, imageWidth, imageHeight);
+        motionContext.font = effect.fontSize + 'px monospace';
+        let overlapRaw = motionCanvas.getContext('2d').getImageData(0, 0, imageWidth, imageHeight);
+        let overlap = new ImageArray(overlapRaw.data, imageWidth, imageHeight);
+        let array = new ImageArray([], imageWidth, imageHeight).fromArray(calculate(processed, overlap), imageWidth, imageHeight);
+        addImage(myCanvas, array);
+        effect.symbols.forEach(symbol => symbol.draw(motionContext));
+        requestAnimationFrame(animate);
+    }
+
+    animate();
+}
+
+class Symbol {
+    constructor(x, y, fontSize, canvasHeight) {
+        this.characters = "アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        this.x = x;
+        this.y = y;
+        this.fontSize = fontSize;
+        this.text = '';
+        this.canvasHeight = canvasHeight;
+    }
+
+    draw(context) {
+        this.text = this.characters.charAt(Math.floor(Math.random()*this.characters.length));
+        context.fillStyle = '#0aff0a';
+        context.fillText(this.text, this.x * this.fontSize, this.y * this.fontSize);
+        if (this.y * this.fontSize > this.canvasHeight) {
+            this.y = 0;
+        } else {
+            this.y += 1;
+        }
+    }
+}
+
+class Effect {
+    constructor(width, height) {
+        this.width = width;
+        this.height = height;
+        this.fontSize = 10;
+        this.columns = this.width/this.fontSize;
+        this.symbols = []
+        this._initialize();
+    }
+
+    _initialize() {
+        for (let i = 0; i < this.columns; i++) {
+            this.symbols[i] = new Symbol(i, 0, this.fontSize, this.height);
+        }
+    }
+}
+
+function loadCanvas(original, source, imageWidth, imageHeight) {
     //Filter2D Example
     document.getElementById('showGrey').addEventListener('click', () => {
         canvasGrey.style.display = 'block';
@@ -180,14 +270,13 @@ imageObj.onload = function () {
         return new Filter2D(data, width, height).chromaticAberration(3);
     })
     addImage(canvasChromaticAberration, dataChromaticAberration);
+}
 
-
-    function addImage (canvas, data) {
-        const context = canvas.getContext ('2d');
-        let rawData = context.createImageData (imageWidth, imageHeight);
-        rawData.data.set (data.raw ());
-        context.putImageData (rawData, 0, 0);
-    }
+function addImage(canvas, data) {
+    const context = canvas.getContext('2d');
+    let rawData = context.createImageData(400, 400);
+    rawData.data.set(data.raw ());
+    context.putImageData(rawData, 0, 0);
 }
 
 class Filter2D {
@@ -352,7 +441,7 @@ class Filter2D {
     }
 
     grey() {
-        let array = new ImageArray([], this._width, this._height).fromRGBA(this._data, this._width, this._height)
+        let array = new ImageArray([], this._width, this._height).fromArray(this._data, this._width, this._height)
         return  array.convert2Grey().dataRGBA()
     }
 
@@ -555,7 +644,7 @@ class Filter2D {
         )
     }
 
-    _bitewiseThreshold(position, data, threshold) {
+    _bitwiseThreshold(position, data, threshold) {
         let value = [0, 0, 0, 255]
         let over = (data[position]?.V() ?? 1) >= threshold ?? 0;
         value[0] = over ? 255 : 0
@@ -579,7 +668,7 @@ class Filter2D {
             }
             // console.log(threshold)
             let position = p * _this._width + q;
-            return _this._bitewiseThreshold(position, _this._data, threshold);
+            return _this._bitwiseThreshold(position, _this._data, threshold);
         }
     }
 
@@ -626,7 +715,7 @@ class ImageArray {
         // console.log(this._data)
     }
 
-    fromRGBA(pixelData, width, height) {
+    fromArray(pixelData, width, height) {
         let array = [];
         for (let i = 0; i < pixelData.length; i++) {
             array.push(pixelData[i].R())
@@ -662,7 +751,7 @@ class ImageArray {
      */
     calculate(operation) {
         let array = operation(this._data, this._width, this._height);
-        return this.fromRGBA(array, this._width, this._height);
+        return this.fromArray(array, this._width, this._height);
     }
 
     convert2Grey() {
@@ -674,7 +763,7 @@ class ImageArray {
                 array.push(new ImagePixel([grey, grey, grey, 255], 'RGB'));
             }
         }
-        return this.fromRGBA(array, this._width, this._height);
+        return this.fromArray(array, this._width, this._height);
     }
 }
 

@@ -11,10 +11,11 @@
         <div><h3>Original Image</h3></div>
         <canvas id="fixCanvas" width="400" height="400"></canvas>
     </div>
-    <canvas id="headCanvas" width="400" height="400"></canvas>
-    <canvas id="motionCanvas" width="400" height="400"></canvas>
+<div><canvas id="myCanvas" width="400" height="400"></canvas></div>
+<div><canvas id="headCanvas" width="400" height="400"></canvas></div>
+<div><canvas id="motionCanvas" width="400" height="400"></canvas></div>
 <div>
-    Chromatic Aberration&emsp;&emsp;&emsp;Jiangyun Pan
+    Jiangyun Pan
     <h1>Week 04 by PanNic</h1>
     <a href="https://github.com/Pannic17/CC-Coding-One/tree/master/Week04">Link to GitHub Repository</a>
     <a href="https://github.com/Pannic17/CC-Coding-One/tree/master/Week04"><img style="width: 15px; height: 15px" src="../utils/icon_github.png" alt="Github"/></a>
@@ -69,6 +70,7 @@
         <div>
             <h4>Examples are listed below, click Show button to show examples</h4>
             <p style="font-size: 10px; font-family: Calibri, serif">*The examples cannot be show at the same time due to memory allocation & limitation of JavaScript</p>
+            <p style="font-size: 10px; font-family: Calibri, serif">*All effects with parameters are adjustable, but I did not have enough time to write the toggles</p>
             <div class="line-chapter"></div>
             <h3>Blur & Sharpen</h3>
             <div class="filter-block">
@@ -96,7 +98,11 @@
                 <p>
                     Bilateral filter smooths the image by both Gaussian and Grey-Scale gradient
                     thus blurs the images and keeps information at the same time.<br>
-                    The kernel of bilateral filter is calculated dynamically to adapt to the different grey-scale gradient of each pixel.
+                    The kernel of bilateral filter is calculated dynamically to adapt to the different grey-scale gradient of each pixel.<br>
+                    Reference&emsp;
+                    <a href="https://homepages.inf.ed.ac.uk/rbf/CVonline/LOCAL_COPIES/MANDUCHI1/Bilateral_Filtering.html">
+                        https://homepages.inf.ed.ac.uk/rbf/CVonline/LOCAL_COPIES/MANDUCHI1/Bilateral_Filtering.html
+                    </a><br>
                 </p>
                 <p>
                     <b>size</b>: size of the kernel, must be even number<br>
@@ -252,6 +258,14 @@
             </div>
             <div>
                 <div class="line-function"></div>
+                <b>_getGaussianKernel(size, sigma)</b>
+            </div>
+            <div>
+                <div class="line-function"></div>
+                <b>_adaptiveBilateral(sigma, x, y, p, q, width, data)</b>
+            </div>
+            <div>
+                <div class="line-function"></div>
                 <b>_adjustValue(value)</b>
             </div>
             <div>
@@ -272,7 +286,23 @@
             </div>
             <div>
                 <div class="line-function"></div>
-                <b>_operationBilateral(sigma, size, _this)</b>
+                <b>_operationAdaptive(_this, sigma, size, adaptive)</b>
+            </div>
+            <div>
+                <div class="line-function"></div>
+                <b>_operationMultiChannel(kernelR, kernelG, kernelB, _this, size)</b>
+            </div>
+            <div>
+                <div class="line-function"></div>
+                <b>_operationMorphological(_this, size, inv)</b>
+            </div>
+            <div>
+                <div class="line-function"></div>
+                <b>_operationAdaptiveThreshold(_this, size, kernel)</b>
+            </div>
+            <div>
+                <div class="line-function"></div>
+                <b>_bitwiseThreshold(position, data, threshold)</b>
             </div>
         </div>
     </div>
