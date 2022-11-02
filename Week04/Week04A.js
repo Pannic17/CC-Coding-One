@@ -51,6 +51,13 @@ canvasErode.style.display = 'none';
 motionCanvas.style.display = 'none';
 // canvasChromaticAberration.style.display = 'none';
 
+let play = false;
+
+var handlePlay  = function () {
+    play = !play;
+    return play;
+}
+
 imageObj.onload = function () {
     const fixContext = fixCanvas.getContext ('2d');
     const imageWidth = imageObj.width;
@@ -89,9 +96,9 @@ imageObj.onload = function () {
         for (let i = 0; i < imageHeight; i++){
             for (let j = 0; j < imageWidth; j++) {
                 // console.log(bg._data[0])
-                let R = bg._data[i*imageWidth+j].V() * ol._data[i*imageWidth+j].R();
-                let G = bg._data[i*imageWidth+j].V() * ol._data[i*imageWidth+j].G();
-                let B = bg._data[i*imageWidth+j].V() * ol._data[i*imageWidth+j].B();
+                let R = bg.dataRGBA()[i*imageWidth+j].V() * ol.dataRGBA()[i*imageWidth+j].R();
+                let G = bg.dataRGBA()[i*imageWidth+j].V() * ol.dataRGBA()[i*imageWidth+j].G();
+                let B = bg.dataRGBA()[i*imageWidth+j].V() * ol.dataRGBA()[i*imageWidth+j].B();
                 // console.log(ol._data[i*imageWidth+j].G());
                 array.push(new ImagePixel([R, G, B, 255], 'RGB'))
             }
@@ -100,7 +107,7 @@ imageObj.onload = function () {
     }
 
     function animate() {
-        motionContext.fillStyle = 'rgba(0,0,0,0.05)';
+        motionContext.fillStyle = 'rgba(0,0,0,0.03)';
         motionContext.fillRect(0, 0, imageWidth, imageHeight);
         motionContext.font = effect.fontSize + 'px monospace';
         let overlapRaw = motionCanvas.getContext('2d').getImageData(0, 0, imageWidth, imageHeight);
@@ -140,7 +147,7 @@ class Effect {
     constructor(width, height) {
         this.width = width;
         this.height = height;
-        this.fontSize = 10;
+        this.fontSize = 5;
         this.columns = this.width/this.fontSize;
         this.symbols = []
         this._initialize();
