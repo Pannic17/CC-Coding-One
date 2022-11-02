@@ -48,6 +48,7 @@ canvasAverageThreshold.style.display = 'none';
 canvasGaussianThreshold.style.display = 'none';
 canvasDilate.style.display = 'none';
 canvasErode.style.display = 'none';
+motionCanvas.style.display = 'none';
 // canvasChromaticAberration.style.display = 'none';
 
 imageObj.onload = function () {
