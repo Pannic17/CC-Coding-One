@@ -1,5 +1,8 @@
 # Week 04 by PanNic  
   
+On MIMIC
+https://mimicproject.com/code/ec66dd56-c8fa-791b-4d69-884f266564a3 
+ 
 ## A. About the Program: Core  
 Self-implemented `ImageArray` & `ImagePixel` class to manage pixels of `ImageData`  
 Built-in conversion between raw `ImageData` and self-implemented `ImageArray`  
