@@ -454,7 +454,7 @@ class Filter2D {
 
     grey() {
         let array = new ImageArray([], this._width, this._height).fromArray(this._data, this._width, this._height)
-        return  array.convert2Grey().dataRGBA()
+        return array.convert2Grey().dataRGBA()
     }
 
     laplacian() {

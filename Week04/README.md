@@ -103,7 +103,7 @@ Erode effect will shrink the white border of a binary image. When processing Dil
 ### Color Correction
 
 `.chromaticAberration(offset)`  
-Chromatic Aberration is also called spherochromatism. It is the seperation of different channels of RGB values  
+Chromatic Aberration is also called spherochromatism. It is the separation of different channels of RGB values  
 **Reference**  https://en.wikipedia.org/wiki/Chromatic_aberration  
 *This implementation of chromatic aberration fix the angle at approximately 60 degrees with fixed channel direction*  
 `offset`: the offset of channels to origin, the larger, the more obvious  
