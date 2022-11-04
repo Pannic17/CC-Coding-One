@@ -1,148 +1,24 @@
-// noinspection EqualityComparisonWithCoercionJS
-
-var mouseX;
-var mouseY;
-const imageObj = new Image ();
-imageObj.src = "Test4.png";
-//imageObj.src = "pic2.jpg";
-console.log( document.body.clientHeight );
-const myCanvas = document.getElementById('myCanvas');
-const fixCanvas = document.getElementById ('fixCanvas');
-const headCanvas = document.getElementById ('headCanvas');
-
-// Character Rain
-const motionCanvas = document.getElementById('motionCanvas');
-
-
-// Filter2D
-const canvasGrey = document.getElementById('canvasGrey');
-
-// Blur & Sharpen
-const canvasAverage = document.getElementById('canvasAverage');
-const canvasGaussian = document.getElementById('canvasGaussian');
-const canvasBilateral = document.getElementById('canvasBilateral');
-const canvasSharpen = document.getElementById('canvasSharpen');
-
-// Edge Detection
-const canvasLaplacian = document.getElementById('canvasLaplacian');
-const canvasSobel = document.getElementById('canvasSobel');
-const canvasScharr = document.getElementById('canvasScharr');
-const canvasFeldman = document.getElementById('canvasFeldman');
-
-// Morphological Transformation
-const canvasAverageThreshold = document.getElementById('canvasAverageThreshold');
-const canvasGaussianThreshold = document.getElementById('canvasGaussianThreshold');
-const canvasDilate = document.getElementById('canvasDilate');
-const canvasErode = document.getElementById('canvasErode');
-
-// Color Correction
-const canvasChromaticAberration = document.getElementById('canvasChromaticAberration');
-
-canvasGrey.style.display = 'none';
-
-canvasAverage.style.display = 'none';
-canvasBilateral.style.display = "none";
-canvasSobel.style.display = 'none';
-canvasScharr.style.display = 'none';
-canvasAverageThreshold.style.display = 'none';
-canvasGaussianThreshold.style.display = 'none';
-canvasDilate.style.display = 'none';
-canvasErode.style.display = 'none';
-motionCanvas.style.display = 'none';
-// canvasChromaticAberration.style.display = 'none';
-
-let play = false;
-let worker = new Worker('W4_filter.js');
-
-
-imageObj.onload = function () {
-    const fixContext = fixCanvas.getContext ('2d');
-    const imageWidth = imageObj.width;
-    const imageHeight = imageObj.height;
-
-    const motionContext = motionCanvas.getContext('2d');
-    const effect = new Effect(imageWidth, imageHeight);
-
-    // const myContext = myCanvas.getContext('2d');
-
-    fixContext.drawImage (imageObj, 0, 0);
-    const original = fixContext.getImageData(0, 0, imageWidth, imageHeight);
-    console.log(original)
-    console.log(original.data)
-    const source = new ImageArray(original.data, imageWidth, imageHeight);
-    console.log(source)
-    console.log(original)
-
-    // let threshold = 25
-    // let dataHead = source.calculate (function (data, width, height) {
-    //     let array = new Filter2D(data, width, height).erode(1, threshold);
-    //     array = new Filter2D(array, width, height).gaussian(3);
-    //     return array;
-    //     // return new Filter2D(array, width, height).gaussian(3, 1);
-    // })
-    // addImage (headCanvas, dataHead);
-    let processed
-    let dataHead;
-    worker.addEventListener('message', function (e) {
-        console.log(e)
-        const context = headCanvas.getContext('2d');
-        let rawData = context.createImageData(400, 400);
-        rawData.data.set(e.data._raw);
-        context.putImageData(rawData, 0, 0);
-        // addImage(headCanvas, e.data);
-        let processedRaw = headCanvas.getContext('2d').getImageData(0, 0, imageWidth, imageHeight);
-        processed = new ImageArray(processedRaw.data, imageWidth, imageHeight);
-    })
-    worker.postMessage(original.data);
-
-
-    // let dataPlay =
-
-    loadCanvas(original, source, imageWidth, imageHeight);
-
-
-    function calculate(bg, ol) {
-        // console.log(ol._data[13412].G());
-        let array = []
-        for (let i = 0; i < imageHeight; i++){
-            for (let j = 0; j < imageWidth; j++) {
-                // console.log(bg._data[0])
-                let R = bg.dataRGBA()[i*imageWidth+j].V() * ol.dataRGBA()[i*imageWidth+j].R();
-                let G = bg.dataRGBA()[i*imageWidth+j].V() * ol.dataRGBA()[i*imageWidth+j].G();
-                let B = bg.dataRGBA()[i*imageWidth+j].V() * ol.dataRGBA()[i*imageWidth+j].B();
-                // console.log(ol._data[i*imageWidth+j].G());
-                array.push(new ImagePixel([R, G, B, 255], 'RGB'))
-            }
-        }
-        return array
+function loadSource (source) {
+    if (source) {
+        let threshold = 25
+        let dataHead = source.calculate (function (data, width, height) {
+            let array = new Filter2D(data, width, height).erode(1, threshold);
+            array = new Filter2D(array, width, height).gaussian(3);
+            return array;
+            // return new Filter2D(array, width, height).gaussian(3, 1);
+        })
+        postMessage(dataHead);
+        // addImage(headCanvas, dataHead);
     }
-
-    function animate() {
-        motionContext.fillStyle = 'rgba(0,0,0,0.03)';
-        motionContext.fillRect(0, 0, imageWidth, imageHeight);
-        motionContext.font = effect.fontSize + 'px monospace';
-        let overlapRaw = motionCanvas.getContext('2d').getImageData(0, 0, imageWidth, imageHeight);
-        if (play && processed) {
-            let overlap = new ImageArray(overlapRaw.data, imageWidth, imageHeight);
-            let array = new ImageArray([], imageWidth, imageHeight).fromArray(calculate(processed, overlap), imageWidth, imageHeight);
-            addImage(myCanvas, array);
-            effect.symbols.forEach(symbol => symbol.draw(motionContext));
-            requestAnimationFrame(animate);
-        }
-    }
-
-    document.getElementById('animate').addEventListener('click', () => {
-        play = !play;
-        if (play) {
-            // worker.postMessage(source);
-            animate();
-        } else {
-            // worker.terminate();
-        }
-    })
-
-    animate();
 }
+
+addEventListener('message', function (e) {
+    let raw = e;
+
+    console.log(raw.data)
+
+    loadSource(new ImageArray(raw.data, 400, 400));
+})
 
 class Symbol {
     constructor(x, y, fontSize, canvasHeight) {
@@ -306,7 +182,7 @@ function loadCanvas(original, source, imageWidth, imageHeight) {
 function addImage(canvas, data) {
     const context = canvas.getContext('2d');
     let rawData = context.createImageData(400, 400);
-    rawData.data.set(data.raw());
+    rawData.data.set(data.raw ());
     context.putImageData(rawData, 0, 0);
 }
 
@@ -731,7 +607,7 @@ class Filter2D {
     }
 }
 
-export class ImageArray {
+class ImageArray {
     constructor(imageData, width, height) {
         this._raw = imageData;
         this._data = [];
