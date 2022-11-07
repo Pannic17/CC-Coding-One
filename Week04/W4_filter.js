@@ -450,7 +450,7 @@ class Filter2D {
                 let x = i - mid;
                 kernel.push([]);
                 for (let j = 0; j < size; j++) {
-                    l et y = j - mid;
+                    let y = j - mid;
                     threshold += _this._data[(p+x)*_this._width+(q+y)]?.V() * kernel[i][j]
                 }
             }
