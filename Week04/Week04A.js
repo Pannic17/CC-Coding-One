@@ -4,6 +4,18 @@ var mouseX;
 var mouseY;
 const imageObj = new Image ();
 imageObj.src = "Test4.png";
+
+document.getElementById("select-image").addEventListener("click", function(e) {
+    console.log(e.target.value);
+    play = false;
+    myCanvas.getContext('2d').clearRect(0,0,400,400);
+    switch (e.target.value) {
+        case "rickroll": imageObj.src = "Test7.png"; break;
+        case "stroll": imageObj.src = "Test5.png"; break;
+        case "chicken": imageObj.src = "Test6.png"; break;
+    }
+})
+
 //imageObj.src = "pic2.jpg";
 console.log( document.body.clientHeight );
 const myCanvas = document.getElementById('myCanvas');
@@ -699,7 +711,7 @@ class Filter2D {
             }
             // console.log(threshold)
             let position = p * _this._width + q;
-            return _this._bitwiseThreshold(position, _this._data, threshold);
+            return _this._bitwiseThreshold(position, _this._data, threshold-((threshold-0.5)/20));
         }
     }
 

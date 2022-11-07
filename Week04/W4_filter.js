@@ -1,8 +1,9 @@
 function loadSource (source) {
     if (source) {
-        let threshold = 25
+        let threshold = 15
         let dataHead = source.calculate (function (data, width, height) {
-            let array = new Filter2D(data, width, height).erode(1, threshold);
+            let array = new Filter2D(data, width, height).sharpen(3, 1);
+            array = new Filter2D(array, width, height).erode(1, threshold);
             array = new Filter2D(array, width, height).gaussian(3);
             return array;
             // return new Filter2D(array, width, height).gaussian(3, 1);
@@ -57,126 +58,6 @@ class Effect {
             this.symbols[i] = new Symbol(i, 0, this.fontSize, this.height);
         }
     }
-}
-
-function loadCanvas(original, source, imageWidth, imageHeight) {
-    //Filter2D Example
-    document.getElementById('showGrey').addEventListener('click', () => {
-        canvasGrey.style.display = 'block';
-        const sourceGrey = new ImageArray(original.data, imageWidth, imageHeight);
-        let dataGrey = sourceGrey.calculate(function (data, width, height) {
-            return new Filter2D(data, width, height).grey();
-        })
-        addImage(canvasGrey, dataGrey);
-    })
-
-
-    // Blur & Sharpen Example
-    document.getElementById('showAverage').addEventListener('click', () => {
-        canvasAverage.style.display = 'block';
-        const sourceAverage = new ImageArray(original.data, imageWidth, imageHeight);
-        let dataAverage = sourceAverage.calculate(function (data, width, height) {
-            return new Filter2D(data, width, height).averageFilter(7);
-        })
-        addImage(canvasAverage, dataAverage);
-    })
-
-    const sourceGaussian = new ImageArray (original.data, imageWidth, imageHeight);
-    let dataGaussian = sourceGaussian.calculate(function (data, width, height) {
-        return new Filter2D(data, width, height).gaussian(5, 2);
-    })
-    addImage(canvasGaussian, dataGaussian);
-
-    document.getElementById('showBilateral').addEventListener('click', () => {
-        canvasBilateral.style.display = "block";
-        const sourceBilateral = new ImageArray (original.data, imageWidth, imageHeight);
-        let dataBilateral = sourceBilateral.calculate(function (data, width, height) {
-            return new Filter2D(data, width, height).bilateral(5, 1);
-        })
-        addImage(canvasBilateral, dataBilateral);
-    })
-
-    const sourceSharpen = new ImageArray (original.data, imageWidth, imageHeight);
-    let dataSharpen = sourceSharpen.calculate(function (data, width, height) {
-        return new Filter2D(data, width, height).sharpen(3, 1);
-    })
-    addImage(canvasSharpen, dataSharpen);
-
-
-    // Edge Detection
-    const sourceLaplacian = new ImageArray(original.data, imageWidth, imageHeight);
-    let dataLaplacian = sourceLaplacian.calculate(function (data, width, height) {
-        return new Filter2D(data, width, height).laplacian();
-    })
-    addImage(canvasLaplacian, dataLaplacian);
-
-    document.getElementById('showSobel').addEventListener('click', () => {
-        canvasSobel.style.display = "block";
-        const sourceSobel = new ImageArray(original.data, imageWidth, imageHeight);
-        let dataSobel = sourceSobel.calculate(function (data, width, height) {
-            return new Filter2D(data, width, height).sobel();
-        })
-        addImage(canvasSobel, dataSobel);
-    })
-
-    document.getElementById('showScharr').addEventListener('click', () => {
-        canvasScharr.style.display = "block";
-        const sourceScharr = new ImageArray(original.data, imageWidth, imageHeight);
-        let dataScharr = sourceScharr.calculate(function (data, width, height) {
-            return new Filter2D(data, width, height).scharr();
-        })
-        addImage(canvasScharr, dataScharr);
-    })
-
-    const sourceFeldman = new ImageArray(original.data, imageWidth, imageHeight);
-    let dataFeldman = sourceFeldman.calculate(function (data, width, height) {
-        return new Filter2D(data, width, height).feldman();
-    })
-    addImage(canvasFeldman, dataFeldman);
-
-
-    // Morphological Transformation
-    document.getElementById('showAverageThreshold').addEventListener('click', () => {
-        canvasAverageThreshold.style.display = "block";
-        const sourceAverageThreshold = new ImageArray(original.data, imageWidth, imageHeight);
-        let dataAverageThreshold = sourceAverageThreshold.calculate(function (data, width, height) {
-            return new Filter2D(data, width, height).adaptiveThresholdAverage(7);
-        })
-        addImage(canvasAverageThreshold, dataAverageThreshold);
-    })
-
-    document.getElementById('showGaussianThreshold').addEventListener('click', () => {
-        canvasGaussianThreshold.style.display = "block";
-        const sourceGaussianThreshold = new ImageArray(original.data, imageWidth, imageHeight);
-        let dataGaussianThreshold = sourceGaussianThreshold.calculate(function (data, width, height) {
-            return new Filter2D(data, width, height).adaptiveThresholdGaussian(7, 1);
-        })
-        addImage(canvasGaussianThreshold, dataGaussianThreshold);
-    })
-
-    document.getElementById('showDilate').addEventListener('click', () => {
-        canvasDilate.style.display = "block";
-        const sourceDilate = new ImageArray(original.data, imageWidth, imageHeight);
-        let dataDilate = sourceDilate.calculate(function (data, width, height) {
-            return new Filter2D(data, width, height).dilate(3, 7);
-        })
-        addImage(canvasDilate, dataDilate);
-    })
-
-    document.getElementById('showErode').addEventListener('click', () => {
-        canvasErode.style.display = "block";
-        const sourceErode = new ImageArray(original.data, imageWidth, imageHeight);
-        let dataErode = sourceErode.calculate(function (data, width, height) {
-            return new Filter2D(data, width, height).erode(3, 7);
-        })
-        addImage(canvasErode, dataErode);
-    })
-
-    const sourceChromaticAberration = new ImageArray(original.data, imageWidth, imageHeight);
-    let dataChromaticAberration = sourceChromaticAberration.calculate(function (data, width, height) {
-        return new Filter2D(data, width, height).chromaticAberration(3);
-    })
-    addImage(canvasChromaticAberration, dataChromaticAberration);
 }
 
 function addImage(canvas, data) {
@@ -569,13 +450,13 @@ class Filter2D {
                 let x = i - mid;
                 kernel.push([]);
                 for (let j = 0; j < size; j++) {
-                    let y = j - mid;
+                    l et y = j - mid;
                     threshold += _this._data[(p+x)*_this._width+(q+y)]?.V() * kernel[i][j]
                 }
             }
             // console.log(threshold)
             let position = p * _this._width + q;
-            return _this._bitwiseThreshold(position, _this._data, threshold);
+            return _this._bitwiseThreshold(position, _this._data, threshold-((threshold-0.5)/20));
         }
     }
 
@@ -681,10 +562,7 @@ class ImagePixel {
             this._g = dataArray[1]
             this._b = dataArray[2]
             this._a = dataArray[3] ?? 255
-            let hsv = this.rgb2HSV(this._r, this._g, this._b)
-            this._h = hsv[0]
-            this._s = hsv[1]
-            this._v = hsv[2]
+
             // console.log(this)
         } else if (mode == 'HSV') {
             this._h = dataArray[0]
@@ -768,6 +646,10 @@ class ImagePixel {
     }
 
     V() {
+        let hsv = this.rgb2HSV(this._r, this._g, this._b)
+        this._h = hsv[0]
+        this._s = hsv[1]
+        this._v = hsv[2]
         return this._v;
     }
 }

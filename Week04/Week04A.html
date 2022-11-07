@@ -11,10 +11,18 @@
         <div><h3>Original Image</h3></div>
         <canvas id="fixCanvas" width="400" height="400"></canvas>
     </div>
-Scroll Down for Detail
-First-Time Loading will take 10-60 seconds depends on device performance
-<div><button id="animate">Play/STOP</button></div>
-<div><canvas id="myCanvas" width="400" height="400"></canvas>adaptive threshold/erode/gaussian blur</div>
+Scroll down for detail. When scrolling please pause the head animate, unless you are on M1 or better chip<br>
+First-time loading will take 10-60 seconds depends on device performance <br>
+If browser alerts 'not responding' please click 'wait'. <br>
+Because MIMIC cannot use external .js file, I cannot use Worker() to perform a multi-thread asynchronous loading
+<div><button id="animate">PLAY/STOP</button></div>
+<label id="select-image">
+    <input type="radio" name="image" value="rickroll" checked> Rickroll
+    <input type="radio" name="image" value="stroll"> Lance Stroll
+    <input type="radio" name="image" value="chicken"> Beautiful
+</label>
+<br>Filters Applied for Head Animation: Laplacian Sharpen, Average Adaptive Threshold, Erode and Gaussian Blur
+<div><canvas id="myCanvas" width="400" height="400"></canvas></div>
 <div><canvas id="headCanvas" width="400" height="400"></canvas></div>
 <div><canvas id="motionCanvas" width="400" height="400"></canvas></div>
 <div>
