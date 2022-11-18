@@ -3,7 +3,7 @@
 var mouseX;
 var mouseY;
 const imageObj = new Image ();
-imageObj.src = "Test4.png";
+imageObj.src = "Test6.png";
 
 document.getElementById("select-image").addEventListener("click", function(e) {
     console.log(e.target.value);
@@ -322,7 +322,7 @@ function addImage(canvas, data) {
     context.putImageData(rawData, 0, 0);
 }
 
-class Filter2D {
+export class Filter2D {
     constructor(data, width, height) {
         this._data = data;
         this._width = width;
@@ -743,7 +743,7 @@ class Filter2D {
     }
 }
 
-export class ImageArray {
+class ImageArray {
     constructor(imageData, width, height) {
         this._raw = imageData;
         this._data = [];
