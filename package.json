@@ -17,5 +17,8 @@
   "bugs": {
     "url": "https://github.com/Pannic17/CC-Coding-One/issues"
   },
-  "homepage": "https://github.com/Pannic17/CC-Coding-One#readme"
+  "homepage": "https://github.com/Pannic17/CC-Coding-One#readme",
+  "dependencies": {
+    "yarn": "^1.22.19"
+  }
 }
