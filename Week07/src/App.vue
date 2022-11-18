@@ -3,7 +3,7 @@
 // Check out https://vuejs.org/api/sfc-script-setup.html#script-setup
 import HelloWorld from './components/HelloWorld.vue'
 
-import * as THREE from 'three/';
+import * as THREE from 'three';
 
 import { onMounted } from "vue";
 import { initScene} from "./threeJS/helper";
@@ -118,6 +118,10 @@ onMounted(() => {
 </template>
 
 <style scoped>
+#three-canvas{
+  margin: 2vw;
+  padding: 0;
+}
 .logo {
   height: 6em;
   padding: 1.5em;
