@@ -6,7 +6,7 @@ import HelloWorld from './components/HelloWorld.vue'
 import * as THREE from 'three';
 
 import { onMounted } from "vue";
-import { initScene} from "./threeJS/helper";
+import { initScene } from "./threeJS/helper";
 
 let scene, camera, renderer, control, geometry, material, points, clock;
 const parameters = {}
