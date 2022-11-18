@@ -1,0 +1,12 @@
+{
+  "name": "week04",
+  "version": "1.0.0",
+  "description": "On MIMIC\r https://mimicproject.com/code/ec66dd56-c8fa-791b-4d69-884f266564a3",
+  "main": "W4_filter.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
