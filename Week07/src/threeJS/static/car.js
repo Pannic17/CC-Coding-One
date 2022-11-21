@@ -1,8 +1,8 @@
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 
 export class Car {
-    model;
     scene;
+    model;
     loaded = false;
     constructor (path, scene, callback) {
         let model;
@@ -42,5 +42,15 @@ export class Car {
 
     traverse(operation) {
         this.model.traverse(operation);
+    }
+
+    rotateWheel(speed) {
+        let parts = this.model.children[0].children;
+        for (let i = 0; i < parts.length; i++) {
+            if (parts[i].name.includes("Wheel")) {
+                parts[i].rotation.y += speed
+            }
+        }
+        console.log(parts)
     }
 }

@@ -13,21 +13,29 @@ import { Car } from "./threeJS/static/car";
 import { Grid } from "./threeJS/serial/grid";
 import { Lights } from "./threeJS/lights";
 import { setupScene } from "./threeJS/setup";
+import {Cloud, initCloud} from "./threeJS/serial/cloud";
 
 let scene, camera, renderer, gui;
 let control, composer, clock;
 let loaded = {
   coupe: false
 };
-let light, speed, unit, curr;
-let coupe, grid;
+let light, unit;
+let coupe, grid, cloud;
 
-speed = 0.2
-unit = 400;
-curr = 0;
+let speedGrid, speedCloud;
+let currentGrid, currentCloud;
+let cloudMarker = true;
 
-function initThree (){
-  let init = setupScene();
+
+unit = 600;
+speedGrid = 0.5;
+speedCloud = 0.02;
+currentGrid = 0;
+currentCloud = 0;
+
+function initThree () {
+  let init = setupScene(unit);
   scene = init.scene;
   camera = init.camera;
   renderer = init.renderer;
@@ -48,22 +56,47 @@ function initThree (){
   camera.lookAt(scene.position)
   console.log(camera)
 
+  clock = new THREE.Clock();
+  light = new Lights(scene, gui);
+
   coupe = new Car("/CC6_coupe.gltf", scene , function () {
     loaded.coupe = true;
+    animate()
   });
-  light = new Lights(scene, gui);
-  grid = new Grid(scene);
+  grid = new Grid(scene, unit);
+  cloud = new Cloud("/smoke_1.png", scene);
 
+  let sphere = new THREE.Mesh( new THREE.IcosahedronGeometry( 5, 8 ), new THREE.MeshBasicMaterial() );
+  sphere.position.set(0, -2, -2)
+  // scene.add( sphere );
+
+  console.log(scene)
   animate()
 }
 
-function animate (){
-  grid.grid.position.z = unit/2-curr;
-  curr += 0.2;
-  if (curr >= unit) {
-    curr = 0;
+function animate () {
+  // let delta = clock.getDelta();
+
+  grid.grid.position.z = unit/2-currentGrid;
+  cloud.particles.forEach(p => {
+    p.rotation.z -= 0.001
+    p.position.z -= speedCloud
+  })
+  currentGrid += speedGrid;
+  currentCloud -= speedCloud
+  if (currentGrid >= unit) {
+    currentGrid = 0;
   }
-  console.log(grid.grid.position)
+  if (Math.abs(currentCloud) > 150 && cloudMarker){
+    console.log("ADD");
+    cloud.generate([0,-2,150]);
+    cloudMarker = false;
+  } else if (Math.abs(currentCloud) > 300) {
+    cloud.remove();
+    currentCloud = 0;
+    cloudMarker = true;
+  }
+
   renderer.render(scene,camera);
   requestAnimationFrame(animate);
 }
