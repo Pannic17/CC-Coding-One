@@ -4,7 +4,7 @@ export class Car {
     model;
     scene;
     loaded = false;
-    constructor (path, scene) {
+    constructor (path, scene, callback) {
         let model;
         let _this = this;
         this.scene = scene;
@@ -14,6 +14,7 @@ export class Car {
             function (gltf) {
                 model = gltf.scene;
                 model.position.y = -2
+                model.position.z = -2
                 model.rotation.y = (90 + 180) * Math.PI / 180;
                 model.castShadow = true;
                 model.receiveShadow = true;
@@ -21,6 +22,7 @@ export class Car {
                 scene.add(model);
                 _this.model = model;
                 _this.loaded = true;
+                callback();
             },
             function (xhr) {
                 console.log((xhr.loaded / xhr.total * 100));

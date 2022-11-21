@@ -6,37 +6,64 @@ import HelloWorld from './components/HelloWorld.vue'
 import * as THREE from 'three';
 
 import { onMounted } from "vue";
-import { initScene } from "./threeJS/helper";
 import { GUI } from "three/examples/jsm/libs/lil-gui.module.min";
 
 // Custom Objects
 import { Car } from "./threeJS/static/car";
+import { Grid } from "./threeJS/serial/grid";
 import { Lights } from "./threeJS/lights";
+import { setupScene } from "./threeJS/setup";
 
 let scene, camera, renderer, gui;
 let control, composer, clock;
+let loaded = {
+  coupe: false
+};
+let light, speed, unit, curr;
+let coupe, grid;
+
+speed = 0.2
+unit = 400;
+curr = 0;
 
 function initThree (){
-  let init = initScene();
+  let init = setupScene();
   scene = init.scene;
   camera = init.camera;
   renderer = init.renderer;
   control = init.control;
   gui = new GUI();
 
-  camera.position.set(0, -0.2, -10)
+  let _gui = {
+    "Log": logCamera
+  }
+  gui.add(_gui, "Log")
+
+  function logCamera() {
+    console.log(camera);
+  }
+
+  camera.position.set(0, -0.15, -10)
   camera.rotation.set(0, 0, -Math.PI)
+  camera.lookAt(scene.position)
   console.log(camera)
 
-  let coupe = new Car("/CC6_coupe.gltf", scene);
-  let light = new Lights(scene, gui)
+  coupe = new Car("/CC6_coupe.gltf", scene , function () {
+    loaded.coupe = true;
+  });
+  light = new Lights(scene, gui);
+  grid = new Grid(scene);
 
-  console.log(scene)
-
-  animate();
+  animate()
 }
 
 function animate (){
+  grid.grid.position.z = unit/2-curr;
+  curr += 0.2;
+  if (curr >= unit) {
+    curr = 0;
+  }
+  console.log(grid.grid.position)
   renderer.render(scene,camera);
   requestAnimationFrame(animate);
 }
