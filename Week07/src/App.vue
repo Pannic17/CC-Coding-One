@@ -11,31 +11,32 @@ import { GUI } from "three/examples/jsm/libs/lil-gui.module.min";
 // Custom Objects
 import { Car } from "./threeJS/static/car";
 import { Grid } from "./threeJS/serial/grid";
+import { Cloud } from "./threeJS/serial/cloud";
 import { Lights } from "./threeJS/lights";
 import { setupScene } from "./threeJS/setup";
-import {Cloud, initCloud} from "./threeJS/serial/cloud";
 
 let scene, camera, renderer, gui;
 let control, composer, clock;
 let loaded = {
   coupe: false
 };
-let light, unit;
+let light;
 let coupe, grid, cloud;
 
+let far, unitCloud;
 let speedGrid, speedCloud;
 let currentGrid, currentCloud;
 let cloudMarker = true;
 
 
-unit = 600;
+far = 200;
 speedGrid = 0.5;
-speedCloud = 0.02;
+speedCloud = 0.05;
 currentGrid = 0;
 currentCloud = 0;
 
 function initThree () {
-  let init = setupScene(unit);
+  let init = setupScene(far);
   scene = init.scene;
   camera = init.camera;
   renderer = init.renderer;
@@ -63,8 +64,8 @@ function initThree () {
     loaded.coupe = true;
     animate()
   });
-  grid = new Grid(scene, unit);
-  cloud = new Cloud("/smoke_1.png", scene);
+  grid = new Grid(scene, far);
+  cloud = new Cloud("/smoke_1.png", scene, far);
 
   let sphere = new THREE.Mesh( new THREE.IcosahedronGeometry( 5, 8 ), new THREE.MeshBasicMaterial() );
   sphere.position.set(0, -2, -2)
@@ -77,25 +78,15 @@ function initThree () {
 function animate () {
   // let delta = clock.getDelta();
 
-  grid.grid.position.z = unit/2-currentGrid;
-  cloud.particles.forEach(p => {
-    p.rotation.z -= 0.001
-    p.position.z -= speedCloud
-  })
+  // Serial Grid
+  grid.grid.position.z = far/2-currentGrid;
   currentGrid += speedGrid;
-  currentCloud -= speedCloud
-  if (currentGrid >= unit) {
+  if (currentGrid >= far) {
     currentGrid = 0;
   }
-  if (Math.abs(currentCloud) > 150 && cloudMarker){
-    console.log("ADD");
-    cloud.generate([0,-2,150]);
-    cloudMarker = false;
-  } else if (Math.abs(currentCloud) > 300) {
-    cloud.remove();
-    currentCloud = 0;
-    cloudMarker = true;
-  }
+
+  // Serial Cloud
+  cloud.animate(speedCloud);
 
   renderer.render(scene,camera);
   requestAnimationFrame(animate);

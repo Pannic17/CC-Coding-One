@@ -24,7 +24,17 @@ export class Lights {
         }
         
         // add Ambient Light
-        scene.add(new THREE.AmbientLight(0xffffff, 40));
+        scene.add(new THREE.AmbientLight(0x555555));
+
+        let orangeLight = new THREE.PointLight(0xcc6600,100,80,1.7);
+        orangeLight.position.set(5,-30,20);
+        scene.add(orangeLight);
+        let redLight = new THREE.PointLight(0xd8547e,100,80,2);
+        redLight.position.set(-5,-50,-20);
+        scene.add(redLight);
+        let blueLight = new THREE.PointLight(0x3677ac,10,80,1.7);
+        blueLight.position.set(-0,-20,50);
+        scene.add(blueLight);
     }
     
     addShadow(light) {
