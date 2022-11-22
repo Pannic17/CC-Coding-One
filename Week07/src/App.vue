@@ -12,28 +12,35 @@ import { GUI } from "three/examples/jsm/libs/lil-gui.module.min";
 import { Car } from "./threeJS/static/car";
 import { Grid } from "./threeJS/serial/grid";
 import { Cloud } from "./threeJS/serial/cloud";
+import { Block } from "./threeJS/serial/block";
 import { Lights } from "./threeJS/lights";
 import { setupScene } from "./threeJS/setup";
+import {PostHelper} from "./threeJS/post";
+import {EffectComposer} from "three/examples/jsm/postprocessing/EffectComposer";
+import {GammaCorrectionShader} from "three/examples/jsm/shaders/GammaCorrectionShader";
+import {ShaderPass} from "three/examples/jsm/postprocessing/ShaderPass";
+import {SSRPass} from "three/examples/jsm/postprocessing/SSRPass";
 
 let scene, camera, renderer, gui;
 let control, composer, clock;
 let loaded = {
   coupe: false
 };
-let light;
-let coupe, grid, cloud;
+let light, post,ssrPass;
+let grid, cloud, block;
+
+let coupe1, coupe2, coupe3;
 
 let far, unitCloud;
-let speedGrid, speedCloud;
+let speedGrid, speedSerial;
 let currentGrid, currentCloud;
 let cloudMarker = true;
 
 
 far = 200;
 speedGrid = 0.5;
-speedCloud = 0.05;
+speedSerial = 0.05;
 currentGrid = 0;
-currentCloud = 0;
 
 function initThree () {
   let init = setupScene(far);
@@ -52,20 +59,36 @@ function initThree () {
     console.log(camera);
   }
 
-  camera.position.set(0, -0.15, -10)
+  camera.position.set(0, -0.8, -6)
   camera.rotation.set(0, 0, -Math.PI)
   camera.lookAt(scene.position)
   console.log(camera)
 
+
+
   clock = new THREE.Clock();
   light = new Lights(scene, gui);
 
-  coupe = new Car("/CC6_coupe.gltf", scene , function () {
+  coupe1 = new Car("/CC6_coupe.gltf", scene , [0.8, -2, -2], function () {
     loaded.coupe = true;
+    coupe1.traverse();
+  });
+  coupe2 = new Car("/CC6_coupe.gltf", scene , [-0.8, -2, 0],function () {
+    loaded.coupe = true;
+    coupe2.traverse();
+  });
+  coupe3 = new Car("/CC6_coupe.gltf", scene , [0.8, -2, 2],function () {
+    loaded.coupe = true;
+    coupe3.traverse();
+    Postprocessing();
     animate()
   });
   grid = new Grid(scene, far);
   cloud = new Cloud("/smoke_1.png", scene, far);
+
+  block = new Block(scene, far);
+
+  // post = new Postprocessing(scene, renderer, camera, window.innerWidth*.96, window.innerWidth*.54)
 
   let sphere = new THREE.Mesh( new THREE.IcosahedronGeometry( 5, 8 ), new THREE.MeshBasicMaterial() );
   sphere.position.set(0, -2, -2)
@@ -75,9 +98,63 @@ function initThree () {
   animate()
 }
 
+const params = {
+  enableSSR: true,
+  autoRotate: true,
+  otherMeshes: true,
+  groundReflector: true,
+};
+
+function Postprocessing() {
+  let selects = []
+  selects = selects.concat(block.buildings)
+  selects = selects.concat(coupe1.getMesh())
+  selects = selects.concat(coupe2.getMesh())
+  selects = selects.concat(coupe3.getMesh())
+  console.log(selects)
+  composer = new EffectComposer( renderer );
+  ssrPass = new SSRPass( {
+    renderer,
+    scene,
+    camera,
+    width: innerWidth,
+    height: innerHeight,
+    selects: selects
+  } );
+
+  composer.addPass( ssrPass );
+  composer.addPass( new ShaderPass( GammaCorrectionShader ) );
+
+  // GUI
+  ssrPass.thickness = 0.018;
+  ssrPass.infiniteThick = false;
+
+  const folder = gui.addFolder( 'SSR Setting' );
+
+  ssrPass.maxDistance = 0.5;
+
+  folder.add( ssrPass, 'bouncing' );
+  folder.add( ssrPass, 'output', {
+    'Default': SSRPass.OUTPUT.Default,
+    'SSR Only': SSRPass.OUTPUT.SSR,
+    'Beauty': SSRPass.OUTPUT.Beauty,
+    'Depth': SSRPass.OUTPUT.Depth,
+    'Normal': SSRPass.OUTPUT.Normal,
+    'Metalness': SSRPass.OUTPUT.Metalness,
+  } ).onChange( function ( value ) {
+
+    ssrPass.output = parseInt( value );
+
+  } );
+  ssrPass.opacity = 1;
+  // folder.open()
+  // gui.close()
+}
+
 function animate () {
   // let delta = clock.getDelta();
 
+  // console.log("ANIMATE")
   // Serial Grid
   grid.grid.position.z = far/2-currentGrid;
   currentGrid += speedGrid;
@@ -86,9 +163,12 @@ function animate () {
   }
 
   // Serial Cloud
-  cloud.animate(speedCloud);
+  block.animate(speedSerial/4);
+  cloud.animate(speedSerial);
 
-  renderer.render(scene,camera);
+  composer.render();
+
+  // renderer.render(scene,camera);
   requestAnimationFrame(animate);
 }
 

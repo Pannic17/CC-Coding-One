@@ -26,13 +26,27 @@ export class Lights {
         // add Ambient Light
         scene.add(new THREE.AmbientLight(0x555555));
 
-        let orangeLight = new THREE.PointLight(0xcc6600,100,80,1.7);
-        orangeLight.position.set(5,-30,20);
+        // let orangeLight = new THREE.PointLight(0xbb6600,25,80,1.7);
+        // orangeLight.position.set(5,-30,50);
+        // scene.add(orangeLight);
+        // let redLight = new THREE.PointLight(0xbb496e,50,80,2);
+        // redLight.position.set(-5,-50,-15);
+        // scene.add(redLight);
+        // let blueLight = new THREE.PointLight(0x0b5394,10,50,1.7);
+        // blueLight.position.set(-0,-20,20);
+        // scene.add(blueLight);
+
+        // Cloud Light
+        let orangeLight = new THREE.PointLight(0xd8547e,30,70,1.7);
+        orangeLight.position.set(10,-30,25);
         scene.add(orangeLight);
-        let redLight = new THREE.PointLight(0xd8547e,100,80,2);
-        redLight.position.set(-5,-50,-20);
+        // let bottomLight = new THREE.PointLight(0xd8547e,10,20,1.7);
+        // bottomLight.position.set(-10,-30,10);
+        // scene.add(bottomLight);
+        let redLight = new THREE.PointLight(0xbb6600,25,70,2);
+        redLight.position.set(-10,-30,10);
         scene.add(redLight);
-        let blueLight = new THREE.PointLight(0x3677ac,10,80,1.7);
+        let blueLight = new THREE.PointLight(0x663399,5,100,1.7);
         blueLight.position.set(-0,-20,50);
         scene.add(blueLight);
     }

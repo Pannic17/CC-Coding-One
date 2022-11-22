@@ -18,14 +18,15 @@ export class Cloud {
             path,
             function (texture) {
                 _this.loaded = true;
-                _this.geometry = new THREE.PlaneGeometry(10, 10);
+                _this.geometry = new THREE.PlaneGeometry(20, 20);
                 _this.material = new THREE.MeshLambertMaterial({
                     map: texture,
                     transparent: true,
                     depthTest: false,
-                    reflectivity: 1
+                    depthWrite: false
+                    // reflectivity: 1
                 })
-                _this.generate(-2, far*10, far+100)
+                _this.generate(-2, far*8, far+100)
         })
     }
 
@@ -34,7 +35,7 @@ export class Cloud {
             let cloud = new THREE.Mesh(this.geometry, this.material);
             cloud.position.set(
                 Math.random()*100-50,
-                5,
+                18+Math.random()*2,
                 Math.random()*size-20+z
             )
             cloud.rotation.set(
@@ -66,7 +67,7 @@ export class Cloud {
         this.current -= speed;
         if (Math.abs(this.current) > 0 && this.flag){
             console.log("ADD");
-            this.generate(this.far/2, this.far*10, this.far+20);
+            this.generate(this.far/2, this.far*8, this.far+20);
             this.flag = false;
         } else if (Math.abs(this.current) > this.far) {
             console.log("REMOVE");

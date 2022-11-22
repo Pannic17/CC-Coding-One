@@ -7,7 +7,7 @@ export function setupScene (unit) {
 
     const scene = new THREE.Scene();
     const renderer = new THREE.WebGLRenderer({antialias: true});
-    const camera = new THREE.PerspectiveCamera(45, 16 / 9, 1, unit/2);
+    const camera = new THREE.PerspectiveCamera(90, 16 / 9, 1, unit/2);
     camera.position.set(0, 1, 0)
     // console.log(camera)
     // @ts-ignore
@@ -26,7 +26,7 @@ export function setupScene (unit) {
     // @ts-ignore
     canvas.appendChild( renderer.domElement );
 
-    scene.fog = new THREE.FogExp2(0x03544e, 0.001);
+    scene.fog = new THREE.Fog(0x0b5394, 5, 180);
     // renderer.setClearColor(scene.fog.color);
 
     return { scene, camera, renderer, control }
