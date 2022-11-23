@@ -51,7 +51,7 @@ function initThree () {
   let _gui = {
     "Log": logCamera
   }
-  gui.add(_gui, "Log")
+  gui.add(_gui, "Log");
 
   function logCamera() {
     console.log(camera);
