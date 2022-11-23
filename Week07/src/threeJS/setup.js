@@ -6,7 +6,9 @@ export function setupScene (unit) {
 
 
     const scene = new THREE.Scene();
-    const renderer = new THREE.WebGLRenderer({antialias: true});
+    const renderer = new THREE.WebGLRenderer({
+        antialias: true
+    });
     const camera = new THREE.PerspectiveCamera(90, 16 / 9, 1, unit/2);
     camera.position.set(0, 1, 0)
     // console.log(camera)

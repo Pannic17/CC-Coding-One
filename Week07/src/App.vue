@@ -11,11 +11,11 @@ import { GUI } from "three/examples/jsm/libs/lil-gui.module.min";
 // Custom Objects
 import { Car } from "./threeJS/static/car";
 import { Grid } from "./threeJS/serial/grid";
+import { Road } from "./threeJS/serial/road";
 import { Cloud } from "./threeJS/serial/cloud";
 import { Block } from "./threeJS/serial/block";
 import { Lights } from "./threeJS/lights";
 import { setupScene } from "./threeJS/setup";
-import {PostHelper} from "./threeJS/post";
 import {EffectComposer} from "three/examples/jsm/postprocessing/EffectComposer";
 import {GammaCorrectionShader} from "three/examples/jsm/shaders/GammaCorrectionShader";
 import {ShaderPass} from "three/examples/jsm/postprocessing/ShaderPass";
@@ -26,16 +26,14 @@ let control, composer, clock;
 let loaded = {
   coupe: false
 };
-let light, post,ssrPass;
-let grid, cloud, block;
+let light, ssrPass;
+let grid, road, cloud, block;
 
 let coupe1, coupe2, coupe3;
 
 let far, unitCloud;
 let speedGrid, speedSerial;
 let currentGrid, currentCloud;
-let cloudMarker = true;
-
 
 far = 200;
 speedGrid = 0.5;
@@ -59,33 +57,36 @@ function initThree () {
     console.log(camera);
   }
 
-  camera.position.set(0, -0.8, -6)
+  camera.position.set(0, -0.2, -6)
   camera.rotation.set(0, 0, -Math.PI)
+  // camera.position.set(0, -0.96, -5.6);
+  // camera.rotation.set(0, .9*Math.PI, -Math.PI);
   camera.lookAt(scene.position)
-  console.log(camera)
+  // console.log(camera)
 
 
 
   clock = new THREE.Clock();
   light = new Lights(scene, gui);
 
-  coupe1 = new Car("/CC6_coupe.gltf", scene , [0.8, -2, -2], function () {
+  coupe1 = new Car("/CC6_coupe.gltf", scene , [1, -2, -2], function () {
     loaded.coupe = true;
     coupe1.traverse();
   });
-  coupe2 = new Car("/CC6_coupe.gltf", scene , [-0.8, -2, 0],function () {
+  coupe2 = new Car("/CC6_coupe.gltf", scene , [-1, -2, 0],function () {
     loaded.coupe = true;
     coupe2.traverse();
   });
-  coupe3 = new Car("/CC6_coupe.gltf", scene , [0.8, -2, 2],function () {
+  coupe3 = new Car("/CC6_coupe.gltf", scene , [1.2, -2, 2],function () {
     loaded.coupe = true;
     coupe3.traverse();
     Postprocessing();
     animate()
   });
-  grid = new Grid(scene, far);
-  cloud = new Cloud("/smoke_1.png", scene, far);
 
+  // grid = new Grid(scene, far);
+  road = new Road(scene, far, 8, 8, 200);
+  cloud = new Cloud("/smoke_1.png", scene, far);
   block = new Block(scene, far);
 
   // post = new Postprocessing(scene, renderer, camera, window.innerWidth*.96, window.innerWidth*.54)
@@ -107,6 +108,7 @@ const params = {
 
 function Postprocessing() {
   let selects = []
+  selects = selects.concat(road.fragments)
   selects = selects.concat(block.buildings)
   selects = selects.concat(coupe1.getMesh())
   selects = selects.concat(coupe2.getMesh())
@@ -131,7 +133,7 @@ function Postprocessing() {
 
   const folder = gui.addFolder( 'SSR Setting' );
 
-  ssrPass.maxDistance = 0.5;
+  ssrPass.maxDistance = 0.2;
 
   folder.add( ssrPass, 'bouncing' );
   folder.add( ssrPass, 'output', {
@@ -156,13 +158,14 @@ function animate () {
 
   // console.log("ANIMATE")
   // Serial Grid
-  grid.grid.position.z = far/2-currentGrid;
+  // grid.grid.position.z = far/2-currentGrid;
   currentGrid += speedGrid;
   if (currentGrid >= far) {
     currentGrid = 0;
   }
 
   // Serial Cloud
+  road.animate(speedSerial);
   block.animate(speedSerial/4);
   cloud.animate(speedSerial);
 

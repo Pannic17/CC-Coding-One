@@ -19,7 +19,7 @@ export class Car {
                 model.rotation.y = (90 + 180) * Math.PI / 180;
                 model.castShadow = true;
                 model.receiveShadow = true;
-                console.log(model);
+                // console.log(model);
                 scene.add(model);
                 _this.model = model;
                 _this.loaded = true;
@@ -54,7 +54,7 @@ export class Car {
                     child.material.metalness = 1;
                     child.material.aoMap = child.material.metalnessMap;
                     child.aoMapIntensity = 1;
-                    console.log(child)
+                    // console.log(child)
                 } else {
                     let map = child.material.map
                     child.castShadow = true;

@@ -18,7 +18,7 @@ export class Cloud {
             path,
             function (texture) {
                 _this.loaded = true;
-                _this.geometry = new THREE.PlaneGeometry(20, 20);
+                _this.geometry = new THREE.PlaneGeometry(15, 15);
                 _this.material = new THREE.MeshLambertMaterial({
                     map: texture,
                     transparent: true,
@@ -34,7 +34,7 @@ export class Cloud {
         for (let i = 0; i < number; i++) {
             let cloud = new THREE.Mesh(this.geometry, this.material);
             cloud.position.set(
-                Math.random()*100-50,
+                Math.random()*60-30,
                 18+Math.random()*2,
                 Math.random()*size-20+z
             )
@@ -47,7 +47,7 @@ export class Cloud {
             this.particles.push(cloud);
             this.scene.add(cloud);
         }
-        console.log(this.scene);
+        // console.log(this.scene);
     }
 
     remove(num) {
