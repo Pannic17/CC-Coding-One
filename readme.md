@@ -1,6 +1,6 @@
 # Coding One Weekly Homework
 ### Jiangyun Pan (PanNic)
-
+https://git.arts.ac.uk/22044483/Coding-One
 ### Week 01
 ##### PART 1 &ensp;&ensp; C Major  
 7 oscillators, 2 with phase. `osc3` & `osc5` controls `osc1` & `osc2`, `osc4` is a 16 times resonance oscillator add detail to the sound
