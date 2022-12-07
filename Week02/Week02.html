@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src = "https://mimicproject.com/libs/nexusUI.js"></script>
+    <script src = "https://mimicproject.com/libs/maximilian.v.0.1.js"></script>
+    <link href="https://fonts.googleapis.com/css?family=Staatliches" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://mimicproject.com/libs/maximilian-example.css" />
+    <meta http-equiv="origin-trial" content="Am2BZ1TAHTD828eDv1ATcn7SD4+NoVRU1Vxjkl5p7SsUfluwqLPYNpsk8Gjxflgt0Mmw0v683uH4F3KreTUxIQsAAABheyJvcmlnaW4iOiJodHRwOi8vbG9jYWxob3N0OjYzMzQyIiwiZmVhdHVyZSI6IlVucmVzdHJpY3RlZFNoYXJlZEFycmF5QnVmZmVyIiwiZXhwaXJ5IjoxNjc1Mjk1OTk5fQ==">
+
+    <div>
+        <div id="title">Maximilian.js Week 02</div>
+        <div id="subtitle"></div>
+        <div><button id="playButton">Play</button></div>
+        <!--<div id="slider" style = "margin:20px"></div>-->
+    </div>
+    <div id="oscilloscope"></div>
+    <div id="spectrogram"></div>
+</head>
+<body>
+
+<!-- Maximilian code goes here -->
+<script id = "myAudioScript">
+    var sampleHat = new Maximilian.maxiSample();
+    var sampleKick = new Maximilian.maxiSample();
+    var sampleSnare = new Maximilian.maxiSample();
+    var osc = new Maximilian.maxiOsc();
+    var oscFilter1 = new Maximilian.maxiOsc();
+    var oscFilter2 = new Maximilian.maxiOsc();
+    var filter = new Maximilian.maxiFilter();
+    sampleHat.setSample(this.getSampleBuffer('hat7'))
+    sampleKick.setSample(this.getSampleBuffer('kick6'))
+    sampleSnare.setSample(this.getSampleBuffer('snare7'))
+    // sampleSnare.setSample(this.setSampleBuffer('snare7'))
+    var phase1 = 1/(sampleHat.getLength()/44100);
+    var phase2 = 1/(sampleKick.getLength()/44100);
+    var phase3 = 1/(sampleSnare.getLength()/44100);
+    // var input = new Input("slider")
+
+    var osc1 = new Maximilian.maxiOsc();
+    var osc2 = new Maximilian.maxiOsc();
+    var osc3 = new Maximilian.maxiOsc();
+    var osc4 = new Maximilian.maxiOsc();
+    var osc5 = new Maximilian.maxiOsc();
+    var note = 100;
+    var seq = [60, 62, 64, 65, 67, 69, 71]
+    var trig1 = 0;
+    var trig2 = 0;
+    var pitch = 0
+
+    var env = new Maximilian.maxiEnv();
+    env.setAttack(100);
+    env.setDecay(10);
+    env.setSustain(0.5);
+    env.setRelease(200);
+    var clock = new Maximilian.maxiClock();
+    clock.setTempo(120);
+    clock.setTicksPerBeat(4)
+    var tones = [0, 0, 196, 261.63, 261.63, 261.63, 329.63, 293.66, 261.63, 329.63, 293.66, 261.63, 261.63, 329.63, 392, 440, 440, 0, 440, 392, 329.63, 329.63, 261.63, 293.66, 261.63, 293.66, 329.63, 293.66, 261.63, 220, 220, 196, 440, 392,329.63, 329.63, 261.63, 293.66, 261.63, 293.66, 440, 392, 329.63, 329.63, 392, 440, 523.26, 392, 329.63, 329.63, 261.63, 293.66, 261.63, 293.66, 329.63, 293.66, 261.63, 220, 220, 196, 261.63, 0, 0]
+
+    function play() {
+        var sig1 = 0;
+        var sig2 = 0;
+        var sig3 = 0;
+        // var speed = input.getValue();
+        sig1 = sampleHat.play(osc1.sinewave(phase1))
+        sig2 = sampleKick.playOnZXAtSpeed(osc2.sinewave(phase2), 1)
+        sig3 = sampleSnare.play(osc3.sinewave(phase3))
+        clock.ticker();
+        if(clock.tick) {
+            note = seq[clock.playHead % seq.length]
+            pitch = tones[Math.floor(clock.playHead/4 % tones.length)]
+            trig1 = clock.playHead % 8 != 1;
+            trig2 = clock.playHead & 2 == 0;
+            if (clock.playHead % 4 == 0) {
+                sampleKick.trigger()
+                // sampleKick.trigger()
+            }
+            if (clock.playHead % 8 == 1) {
+                // sampleKick.trigger()
+                sampleSnare.trigger()
+            }
+            if (clock.playHead % 16 == 3) {
+                sampleHat.trigger()
+            }
+        }
+        return sig1 + sig2 + sig3 + filter.hires((0-osc.noise()) * 0.05, oscFilter1.sinewave(Math.abs(oscFilter2.saw(1)))*3000, 10) * env.adsr(1, trig1) + osc4.triangle(mtof(note - Math.random()*12)) * env.adsr(1, trig2) * 0.1 + osc5.sinewave(pitch)*2;
+    }
+</script>
+
+<!-- Main Javascript code goes here -->
+<script language="javascript">
+    let maxi;
+    initAudioEngine().then(async(dspEngine)=>{
+        maxi = dspEngine;
+        await maxi.addSample("hat7","hat_7.wav")
+        await maxi.addSample("kick6", "kick_6.wav")
+        await maxi.addSample("snare7", "snare_7.wav")
+        setup();
+        //Get audio code from script element
+        maxi.setAudioCode("myAudioScript");
+    })
+    ///////YOU CAN IGNORE ME - CODE FOR SCOPES///////
+    let setup = ()=> {
+        maxi.hush()
+        maxi.send("slider",[1])
+        Nexus.context = maxi.audioWorkletNode.context;
+        new Nexus.Oscilloscope('oscilloscope', {'size': [400,100]}).connect(maxi.audioWorkletNode);
+        new Nexus.Spectrogram('spectrogram', {'size': [400,100]}).connect(maxi.audioWorkletNode);
+        const playButton = document.getElementById('playButton');
+        let playAudio = () => {
+            playButton.innerHTML  = maxi.play() ? "STOP":"PLAY"
+        }
+        playButton.addEventListener("click", () => playAudio());
+        // var slider = new Nexus.Slider('#slider',{min:0.2,max:2})
+
+    }
+    ///////////////////////////////////////////////
+
+</script>
+</body>
+</html>
