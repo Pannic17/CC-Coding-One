@@ -1,7 +1,6 @@
 <script setup>
 // This starter template is using Vue 3 <script setup> SFCs
 // Check out https://vuejs.org/api/sfc-script-setup.html#script-setup
-import HelloWorld from './components/HelloWorld.vue'
 
 import * as THREE from 'three';
 
@@ -62,9 +61,7 @@ function initThree () {
   // camera.position.set(0, -0.96, -5.6);
   // camera.rotation.set(0, .9*Math.PI, -Math.PI);
   camera.lookAt(scene.position)
-  // console.log(camera)
-
-
+  console.log(camera)
 
   clock = new THREE.Clock();
   light = new Lights(scene, gui);

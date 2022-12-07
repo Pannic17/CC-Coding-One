@@ -79,11 +79,11 @@ imageObj.onload = function () {
 
     fixContext.drawImage (imageObj, 0, 0);
     const original = fixContext.getImageData(0, 0, imageWidth, imageHeight);
-    console.log(original)
-    console.log(original.data)
+    console.log(original);
+    console.log(original.data);
     const source = new ImageArray(original.data, imageWidth, imageHeight);
-    console.log(source)
-    console.log(original)
+    console.log(source);
+    console.log(original);
 
     // let threshold = 25
     // let dataHead = source.calculate (function (data, width, height) {
