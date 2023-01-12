@@ -24,7 +24,7 @@ https://mimicproject.com/code/3739c2af-323a-fed5-d346-016a8db152f6
 ##### Convolutional Kernel Filters
 Implemented 13 convolutional kernel filter. Self-implemented `ImageArray`, `ImagePixel` & `Filter2D` 
 classes to realize some image processing functions similar to **OpenCV** usign javascript.  
-https://mimicproject.com/code/ec66dd56-c8fa-791b-4d69-884f266564a3
+https://mimicproject.com/code/ec66dd56-c8fa-791b-4d69-884f266564a3  
 https://github.com/Pannic17/CC-Coding-One/tree/master/Week04 (on GitHub)
 ### Week 06
 ##### Bumping Heart
